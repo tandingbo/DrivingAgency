@@ -4,8 +4,12 @@
 
 ## 技术包括
 
-Spring Boot 2.1.3
+1. Spring Boot 2.1.3
 
-Spring Data Jpa
+2. Spring Data Jpa
 
-Spring Data Redis
+3. Spring Data Redis
+
+4. Spring Boot Mail
+
+5. Swagger
