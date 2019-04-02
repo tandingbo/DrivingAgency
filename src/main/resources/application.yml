@@ -1,0 +1,32 @@
+server:
+  port: 9901
+  servlet:
+    context-path: /driving
+spring:
+  datasource:
+    username: root
+    password: password
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/driving?characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8&useUnicode=true&allowPublicKeyRetrieval=true
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 3
+      min-idle: 3
+      max-active: 10
+      max-wait: 60000
+      filter:
+        stat:
+          log-slow-sql: true
+          slow-sql-millis: 2000
+      stat-view-servlet:
+        login-username: admin
+        login-password: admin
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  mail:
+    host: smtp.qq.com
+    username: 2375872953@qq.com
+    password: wmsmfzchmzpjdiai
+    default-encoding: UTF-8
