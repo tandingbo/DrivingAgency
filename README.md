@@ -13,3 +13,5 @@
 4. Spring Boot Mail
 
 5. Swagger
+
+6. Quartz
