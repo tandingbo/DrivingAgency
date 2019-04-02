@@ -1,15 +1,19 @@
 package com.beautifulsoup.driving.controller;
 
 import com.beautifulsoup.driving.common.ResponseResult;
+import com.beautifulsoup.driving.service.FileService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -18,8 +22,10 @@ import java.util.List;
 @RequestMapping(value = "/file")
 public class FileController {
 
-    @ApiOperation(value = "上传多个文件",notes = "上传多个文件",produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            response = List.class,httpMethod = "Post")
+    @Autowired
+    private FileService fileService;
+
+    @ApiOperation(value = "文件上传",notes = "上传文件",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiResponses({
             @ApiResponse(code = 100, message = "请求参数有误"),
             @ApiResponse(code = 101, message = "未授权"),
@@ -28,11 +34,14 @@ public class FileController {
             @ApiResponse(code = 200, message = "服务器内部错误"),
             @ApiResponse(code = 400,message = "请求参数不正确")
     })
-    @PostMapping(value = "/uploads",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/upload",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public ResponseResult uploadFiles(){
-
-        return null;
+    public ResponseResult uploadFile(@RequestParam("idcard")MultipartFile file){
+        String path=fileService.uploadIdCardImage(file);
+        if (path != null) {
+             return ResponseResult.createBySuccess("文件上传成功",path);
+        }
+        return ResponseResult.createByError("文件上传失败");
     }
 
 }

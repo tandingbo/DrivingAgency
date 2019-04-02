@@ -35,3 +35,15 @@ spring:
       ddl-auto: update
     show-sql: true
     generate-ddl: true
+  redis:
+    database: 1
+    host: 127.0.0.1
+    port: 6379
+    password:
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+      shutdown-timeout: 100

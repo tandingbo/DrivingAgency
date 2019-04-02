@@ -17,18 +17,18 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.beautifulsoup.chengfeng"))
+                .apis(RequestHandlerSelectors.basePackage("com.beautifulsoup.driving"))
                 .paths(PathSelectors.any())
                 .build();
     }
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("ChengFeng1.5 后端API文档")
-                .description("Welcome to Chengfeng v1.5")
-                .termsOfServiceUrl("https://github.com/fuyunwang/ChengFeng1.5")
+                .title("Driving Agency后端API文档")
+                .description("Welcome to Driving Agency")
+                .termsOfServiceUrl("https://github.com/fuyunwang/DrivingAgency")
                 .contact(new Contact("BeautifulSoup","https://github.com/fuyunwang","beautifulsoup@163.com"))
-                .version("1.5")
+                .version("1.0")
                 .build();
     }
 }
