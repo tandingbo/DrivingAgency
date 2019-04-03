@@ -20,19 +20,20 @@ public class Student implements Serializable {
     @Column(name = "id",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
+    @Column(name = "student_id",length = 100)
     private String studentId;
 
+    @Column(name = "student_name",length = 100)
     private String studentName;
-
+    @Column(name = "student_phone",length = 50)
     private String studentPhone;
-
+    @Column(name = "student_img",length = 1024)
     private String studentImg;
-
+    @Column(name = "student_school",length = 100)
     private String studentSchool;
 
     private BigDecimal studentPrice;
-
+    @Column(name = "operator",length = 100)
     private String operator;
 
     private Integer status;

@@ -12,6 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "tb_agent")
+@NamedEntityGraph(name = "agent.all",attributeNodes = {
+        @NamedAttributeNode("roles")
+})
 public class Agent implements Serializable {
 
     private static final long serialVersionUID = -6959540856586065830L;
@@ -21,18 +24,19 @@ public class Agent implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "agent_name",length = 100)
     private String agentName;
-
+    @Column(name = "agent_password",length = 500)
     private String agentPassword;
-
+    @Column(name = "agent_phone",length = 50)
     private String agentPhone;
-
+    @Column(name = "agent_email",length = 60)
     private String agentEmail;
-
+    @Column(name = "agent_idcard",length = 100)
     private String agentIdcard;
-
+    @Column(name = "agent_idcard_img",length = 1024)
     private String agentIdcardImg;
-
+    @Column(name = "agent_school",length = 100)
     private String agentSchool;
 
     private Integer agentAchieve;
@@ -42,8 +46,8 @@ public class Agent implements Serializable {
     private Integer status;
 
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id"),
-    inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"))
+    @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
+    inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
     private List<Role> roles=new ArrayList<>();
 
     public Integer getId() {

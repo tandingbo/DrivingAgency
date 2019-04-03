@@ -30,11 +30,17 @@ public class AgentDto {
     @NotBlank(message = "邮箱不能为空")
     private String agentEmail;
 
-    @Length
+    @Length(max = 100,message = "身份证号长度过长")
     @NotBlank(message = "身份证号不能为空")
     private String agentIdcard;
 
+    @Length(max = 1024,message = "身份证照片地址长度过长")
     private String agentIdcardImg;
 
+    @Length(max = 100,message = "学校名称长度太长")
     private String agentSchool;
+
+    private Integer parentId;
+
+    private Integer status;
 }

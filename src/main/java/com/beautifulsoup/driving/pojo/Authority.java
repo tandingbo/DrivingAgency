@@ -19,21 +19,22 @@ public class Authority implements Serializable {
     @Column(name = "id",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
+    @Column(name = "acl_name",length = 100)
     private String aclName;
-
+    @Column(name = "acl_url",length = 500)
     private String aclUrl;
 
     private Integer type;
 
     private Integer status;
 
+    @Column(name = "acl_remark",length = 500)
     private String remark;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 
-
+    @Column(name = "operator",length = 100)
     private String operator;
 
     public Integer getId() {

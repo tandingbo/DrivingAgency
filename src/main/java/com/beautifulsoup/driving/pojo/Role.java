@@ -13,6 +13,10 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "tb_role")
+@NamedEntityGraph(name = "role.all",attributeNodes = {
+        @NamedAttributeNode("agents"),
+        @NamedAttributeNode("authorities")
+})
 public class Role implements Serializable {
     private static final long serialVersionUID = 6464265280184012778L;
     @Id
@@ -20,27 +24,29 @@ public class Role implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "role_name",length = 100)
     private String roleName;
 
     private Integer type;
 
     private Integer status;
-
+    @Column(name = "remark",length = 500)
     private String remark;
 
+    @Column(name = "operator",length = 100)
     private String operator;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id"))
+    @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
+            inverseJoinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
     private List<Agent> agents=new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    @JoinTable(name = "tb_role_acl",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "acl_id",referencedColumnName = "id"))
+    @JoinTable(name = "tb_role_acl",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
+            inverseJoinColumns = @JoinColumn(name = "acl_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
     private List<Authority> authorities=new ArrayList<>();
 
     public Integer getId() {
