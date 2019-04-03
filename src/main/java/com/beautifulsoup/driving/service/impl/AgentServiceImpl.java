@@ -58,11 +58,10 @@ public class AgentServiceImpl implements AgentService {
         String token = TokenUtil.conferToken(userTokenDto, DrivingConstant.TOKEN_EXPIRE);
 
         //保存用户状态
-        stringRedisTemplate.opsForHash().putAll(DrivingConstant.Redis.ADMIN_TOKEN+token,agent2Map(select));
+        stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.ADMIN_TOKEN+token,select.getAgentName());
         stringRedisTemplate.expire(DrivingConstant.Redis.ADMIN_TOKEN+token,DrivingConstant.TOKEN_EXPIRE, TimeUnit.MILLISECONDS);
         redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
                 DrivingConstant.Redis.ADMIN_TOKEN+token,select);
-
         AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
 
         agentBaseInfoVo.setToken(token);
@@ -76,18 +75,7 @@ public class AgentServiceImpl implements AgentService {
     }
 
 
-    private Map<String,Object> agent2Map(Agent agent){
-        Map<String, Object> map= Maps.newHashMap();
-        map.put("id", Integer.toString(agent.getId()));
-        map.put("agentName", agent.getAgentName());
-        map.put("agentPhone", agent.getAgentPhone());
-        map.put("agentEmail", agent.getAgentEmail());
-        map.put("agentIdcard", agent.getAgentIdcard());
-        map.put("agentIdcardImg", agent.getAgentIdcardImg());
-        map.put("agentSchool", agent.getAgentSchool());
-        map.put("parentId",Integer.toString(agent.getParentId()));
-        return map;
-    }
+
 
 
 }

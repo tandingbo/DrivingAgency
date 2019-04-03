@@ -64,15 +64,19 @@ public class LoginFilter implements Filter {
                 if (!hasToken){
                     throw new AuthenticationException("用户登录状态已失效,请重新登陆");
                 }
-                Agent agent= (Agent) redisTemplate.opsForHash().get(DrivingConstant.Redis.LOGIN_AGENTS,
-                        DrivingConstant.Redis.ADMIN_TOKEN+token);
-                if (agent == null) {
+                Boolean hasAdmin = redisTemplate.opsForHash().hasKey(DrivingConstant.Redis.LOGIN_AGENTS,
+                        DrivingConstant.Redis.ADMIN_TOKEN + token);
+                if (!hasAdmin.booleanValue()) {
                     Agent agent1 = agentRepository.findAgentByAgentNameAndParentId(userTokenDto.getAgentName(),-1);
+                    if (agent1==null){
+                        throw new AuthenticationException("服务器错误,您的账号已被盗?");
+                    }
                     redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
                             DrivingConstant.Redis.ADMIN_TOKEN+token,agent1);
                 }
-                SecurityContextHolder.addAgent((Agent) redisTemplate.opsForHash().get(DrivingConstant.Redis.LOGIN_AGENTS,
-                        DrivingConstant.Redis.ADMIN_TOKEN+token));
+               Agent agent=(Agent) redisTemplate.opsForHash().get(DrivingConstant.Redis.LOGIN_AGENTS,
+                        DrivingConstant.Redis.ADMIN_TOKEN+token);
+                SecurityContextHolder.addAgent(agent);
             }else{
 
             }
