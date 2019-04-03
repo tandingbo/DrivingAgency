@@ -1,7 +1,10 @@
 package com.beautifulsoup.driving.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -43,12 +46,14 @@ public class Role implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JsonIgnore
+    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
             inverseJoinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
     private List<Agent> agents=new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "tb_role_acl",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
             inverseJoinColumns = @JoinColumn(name = "acl_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
     private List<Authority> authorities=new ArrayList<>();

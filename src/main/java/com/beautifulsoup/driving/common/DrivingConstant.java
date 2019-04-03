@@ -2,6 +2,8 @@ package com.beautifulsoup.driving.common;
 
 public class DrivingConstant {
 
+    public static final Long TOKEN_EXPIRE=32400000L;//token有效期9小时
+
     public interface File{
         String UPLOAD_EMPTY_ERROR="上传文件不能为空";
         String UPLOAD_FAILURE="文件上传失败";

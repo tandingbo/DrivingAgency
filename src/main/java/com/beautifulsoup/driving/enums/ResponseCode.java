@@ -8,8 +8,8 @@ import lombok.Getter;
 public enum ResponseCode {
     SUCCESS(10001,"请求成功"),
     ERROR(50000,"请求失败"),
-    ILLEGAL_ARGUMENTS(50001,"请求参数不合法")
-    ;
+    ILLEGAL_ARGUMENTS(50001,"请求参数不合法"),
+    AUTHENTICATION_FAILURE(50002,"用户认证失败");
 
     private final Integer code;
     private final String desc;

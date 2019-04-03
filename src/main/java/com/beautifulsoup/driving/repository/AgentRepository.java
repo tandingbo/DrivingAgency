@@ -12,4 +12,6 @@ public interface AgentRepository extends JpaRepository<Agent,Integer> {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @EntityGraph(value = "agent.all")
     List<Agent> findAll();
+
+    Agent findAgentByAgentName(String agentName);
 }

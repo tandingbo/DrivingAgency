@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @Configuration
 @EnableJpaAuditing
-@Import(value = {SwaggerConfig.class})
+@Import(value = {SwaggerConfig.class,CorsConfig.class})
 public class DrivingAgencyConfig {
 }

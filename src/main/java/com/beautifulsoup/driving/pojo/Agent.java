@@ -45,7 +45,7 @@ public class Agent implements Serializable {
 
     private Integer status;//状态。1表示正常，0表示冻结
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
     inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
     private List<Role> roles=new ArrayList<>();

@@ -1,12 +1,18 @@
 package com.beautifulsoup.driving.dto;
 
 import com.beautifulsoup.driving.common.DrivingConstant;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudentDto {
     @Length(max=100,message = "学号长度不能超过100字符")
     @NotBlank(message = "学生学号不能为空")
