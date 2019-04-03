@@ -18,10 +18,6 @@ public class AgentDto {
     @NotBlank(message = "代理名不能为空")
     private String agentName;
 
-    @Length(max=50,message = "密码长度必须在50个字符以内")
-    @NotBlank(message = "密码不能为空")
-    private String agentPassword;
-
     @Pattern(regexp = DrivingConstant.Validation.PHONE_REGEX,message = "手机号格式不正确")
     @NotBlank(message = "手机号不能为空")
     private String agentPhone;
@@ -39,8 +35,4 @@ public class AgentDto {
 
     @Length(max = 100,message = "学校名称长度太长")
     private String agentSchool;
-
-    private Integer parentId;
-
-    private Integer status;
 }

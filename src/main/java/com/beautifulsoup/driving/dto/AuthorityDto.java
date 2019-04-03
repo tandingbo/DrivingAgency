@@ -19,9 +19,9 @@ public class AuthorityDto {
     @NotBlank(message = "权限url不能为空")
     private String aclUrl;//权限对应url
 
-    private Integer type;//权限类型,1表示对一级代理的操作,2表示对2级代理的操作,3表示对学员的操作
-
-    private Integer status;//状态,1表示正常0表示冻结
+//    private Integer type;//权限类型,1表示对一级代理的操作,2表示对2级代理的操作,3表示对学员的操作
+//
+//    private Integer status;//状态,1表示正常0表示冻结
 
     @Length(max=500,message = "备注长度不能超过500字符")
     private String remark;

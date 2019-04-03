@@ -1,6 +1,7 @@
 package com.beautifulsoup.driving.service.impl;
 
 import com.beautifulsoup.driving.common.DrivingConstant;
+import com.beautifulsoup.driving.common.SecurityContextHolder;
 import com.beautifulsoup.driving.dto.AgentDto;
 import com.beautifulsoup.driving.dto.UserTokenDto;
 import com.beautifulsoup.driving.exception.AuthenticationException;
@@ -8,6 +9,7 @@ import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.repository.AgentRepository;
 import com.beautifulsoup.driving.service.AgentService;
 import com.beautifulsoup.driving.utils.MD5Util;
+import com.beautifulsoup.driving.utils.ParamValidatorUtil;
 import com.beautifulsoup.driving.utils.TokenUtil;
 import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
 import com.google.common.base.Preconditions;
@@ -71,6 +73,15 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public AgentBaseInfoVo addNewAgent(AgentDto agentDto, BindingResult result) {
+        ParamValidatorUtil.validateBindingResult(result);
+        Agent agent=new Agent();
+        BeanUtils.copyProperties(agentDto,agent);
+
+        Agent authentication = SecurityContextHolder.getAgent();
+
+//        authentication.getRole().
+
+
         return null;
     }
 

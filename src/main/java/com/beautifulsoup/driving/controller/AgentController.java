@@ -38,7 +38,11 @@ public class AgentController {
     @PostMapping(value = "/add",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<AgentBaseInfoVo> addNewAgent(@Valid @RequestBody AgentDto agentDto, BindingResult result){
-        return null;
+        AgentBaseInfoVo agentBaseInfoVo = agentService.addNewAgent(agentDto, result);
+        if (agentBaseInfoVo != null) {
+            return ResponseResult.createBySuccess("添加代理成功",agentBaseInfoVo);
+        }
+        return ResponseResult.createByError("代理添加失败");
     }
 
 }
