@@ -2,6 +2,8 @@ package com.beautifulsoup.driving.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -12,6 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "tb_student")
+@EntityListeners(AuditingEntityListener.class)
 public class Student implements Serializable {
 
     private static final long serialVersionUID = -330151956654151223L;
@@ -19,7 +22,8 @@ public class Student implements Serializable {
     @Id
     @Column(name = "id",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+       private Integer id;
+
     @Column(name = "student_id",length = 100)
     private String studentId;
 
@@ -38,6 +42,7 @@ public class Student implements Serializable {
 
     private Integer status;
 
+    @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 

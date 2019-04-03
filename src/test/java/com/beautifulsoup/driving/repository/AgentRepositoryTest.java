@@ -19,13 +19,13 @@ public class AgentRepositoryTest {
     @Test
     public void saveAgent() {
         AgentDto agentDto=AgentDto.builder()
-                .agentName("Gopher")
-                .agentPassword(MD5Util.MD5Encode("password"))
-                .agentEmail("gopher@163.com")
+                .agentName("Admin")
+                .agentPassword(MD5Util.MD5Encode("123456"))
+                .agentEmail("beautifulsoup@163.com")
                 .agentPhone("17864195200")
                 .status(1)//状态正常,可用
-                .parentId(0)//2级代理
-                .agentIdcard("37233011117777663220")
+                .parentId(-1)//1级代理
+                .agentIdcard("372330000007777663220")
                 .agentSchool("山东师范大学")
                 .agentIdcardImg("http://39.106.62.161:8888/driving/M00/00/00/111")
                 .build();

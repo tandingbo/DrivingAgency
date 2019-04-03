@@ -2,6 +2,8 @@ package com.beautifulsoup.driving.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,6 +19,7 @@ import java.util.List;
         @NamedAttributeNode("agents"),
         @NamedAttributeNode("authorities")
 })
+@EntityListeners(AuditingEntityListener.class)
 public class Role implements Serializable {
     private static final long serialVersionUID = 6464265280184012778L;
     @Id
@@ -27,15 +30,16 @@ public class Role implements Serializable {
     @Column(name = "role_name",length = 100)
     private String roleName;
 
-    private Integer type;
+    private Integer type;//角色类型,0表示超级管理员,1表示1级代理,2表示2级代理
 
-    private Integer status;
+    private Integer status;//状态.1表示正常,0表示冻结
     @Column(name = "remark",length = 500)
     private String remark;
 
     @Column(name = "operator",length = 100)
     private String operator;
 
+    @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 

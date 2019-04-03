@@ -39,11 +39,11 @@ public class Agent implements Serializable {
     @Column(name = "agent_school",length = 100)
     private String agentSchool;
 
-    private Integer agentAchieve;
+    private Integer agentAchieve;//总业绩
 
-    private Integer parentId;
+    private Integer parentId;//超级管理员父节点不存在,为-1.
 
-    private Integer status;
+    private Integer status;//状态。1表示正常，0表示冻结
 
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
