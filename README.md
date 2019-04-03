@@ -10,8 +10,10 @@
 
 3. Spring Data Redis
 
-4. Spring Boot Mail
+4. Spring Data Mongodb
 
-5. Swagger
+5. Spring Boot Mail
 
-6. Quartz
+6. Swagger
+
+7. Quartz

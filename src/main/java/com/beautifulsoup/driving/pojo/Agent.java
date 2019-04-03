@@ -1,11 +1,23 @@
 package com.beautifulsoup.driving.pojo;
 
-import javax.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "tb_agent")
-public class Agent {
+public class Agent implements Serializable {
+
+    private static final long serialVersionUID = -6959540856586065830L;
+
     @Id
+    @Column(name = "id",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
@@ -24,6 +36,15 @@ public class Agent {
     private String agentSchool;
 
     private Integer agentAchieve;
+
+    private Integer parentId;
+
+    private Integer status;
+
+    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id"),
+    inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"))
+    private List<Role> roles=new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -95,5 +116,29 @@ public class Agent {
 
     public void setAgentAchieve(Integer agentAchieve) {
         this.agentAchieve = agentAchieve;
+    }
+
+    public Integer getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Integer parentId) {
+        this.parentId = parentId;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }

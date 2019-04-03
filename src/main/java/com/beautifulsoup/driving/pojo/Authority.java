@@ -1,12 +1,22 @@
 package com.beautifulsoup.driving.pojo;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "tb_acl")
-public class Authority {
+public class Authority implements Serializable {
+
+    private static final long serialVersionUID = -8262055427215899696L;
+
     @Id
+    @Column(name = "id",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
@@ -20,7 +30,9 @@ public class Authority {
 
     private String remark;
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
+
 
     private String operator;
 

@@ -1,12 +1,22 @@
 package com.beautifulsoup.driving.pojo;
 
-import javax.persistence.*;
-import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "tb_role")
-public class Role {
+public class Role implements Serializable {
+    private static final long serialVersionUID = 6464265280184012778L;
     @Id
+    @Column(name = "id",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
@@ -20,7 +30,18 @@ public class Role {
 
     private String operator;
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
+
+    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id"))
+    private List<Agent> agents=new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JoinTable(name = "tb_role_acl",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "acl_id",referencedColumnName = "id"))
+    private List<Authority> authorities=new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -76,5 +97,21 @@ public class Role {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public List<Agent> getAgents() {
+        return agents;
+    }
+
+    public void setAgents(List<Agent> agents) {
+        this.agents = agents;
+    }
+
+    public List<Authority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(List<Authority> authorities) {
+        this.authorities = authorities;
     }
 }

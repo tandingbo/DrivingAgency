@@ -1,13 +1,23 @@
 package com.beautifulsoup.driving.pojo;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "tb_student")
-public class Student {
+public class Student implements Serializable {
+
+    private static final long serialVersionUID = -330151956654151223L;
+
     @Id
+    @Column(name = "id",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
@@ -25,6 +35,9 @@ public class Student {
 
     private String operator;
 
+    private Integer status;
+
+    @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 
     public Integer getId() {
@@ -97,5 +110,13 @@ public class Student {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }

@@ -7,7 +7,7 @@ spring:
     username: root
     password: password
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/driving?characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8&useUnicode=true&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://127.0.0.1:3306/driving_demo?characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8&useUnicode=true&allowPublicKeyRetrieval=true
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
       initial-size: 3
@@ -34,7 +34,8 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-    generate-ddl: true
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL5Dialect
   redis:
     database: 1
     host: 127.0.0.1
