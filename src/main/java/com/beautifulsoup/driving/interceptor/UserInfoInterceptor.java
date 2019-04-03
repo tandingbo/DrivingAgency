@@ -1,5 +1,6 @@
 package com.beautifulsoup.driving.interceptor;
 
+import com.beautifulsoup.driving.common.SecurityContextHolder;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -14,11 +15,11 @@ public class UserInfoInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-
+        SecurityContextHolder.remove();
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-
+        SecurityContextHolder.remove();
     }
 }

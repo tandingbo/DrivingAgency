@@ -13,4 +13,5 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AgentBaseInfoVo {
     private String token;
+
 }

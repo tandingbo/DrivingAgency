@@ -42,6 +42,8 @@ public class AgentRepositoryTest {
                 .build();
         Agent agent=new Agent();
         BeanUtils.copyProperties(agentDto,agent);
+        Role role=roleRepository.findById(1).get();
+        agent.setRole(role);
         agentRepository.saveAndFlush(agent);
     }
 
@@ -49,8 +51,8 @@ public class AgentRepositoryTest {
     @Test
     public void updateAgentTest(){
         Agent agent=agentRepository.findById(1).get();
-        Role role=roleRepository.getOne(1);
-        agent.setRoles(ImmutableList.of(role));
+        Role role=roleRepository.findById(1).get();
+        agent.setRole(role);
         agentRepository.saveAndFlush(agent);
     }
 

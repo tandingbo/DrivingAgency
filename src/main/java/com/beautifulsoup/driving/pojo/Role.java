@@ -19,7 +19,6 @@ import java.util.List;
 @Entity
 @Table(name = "tb_role")
 @NamedEntityGraph(name = "role.all",attributeNodes = {
-        @NamedAttributeNode("agents"),
         @NamedAttributeNode("authorities")
 })
 @EntityListeners(AuditingEntityListener.class)
@@ -46,14 +45,7 @@ public class Role implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 
-    @JsonIgnore
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
-            inverseJoinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
-    private List<Agent> agents=new ArrayList<>();
-
-    @Fetch(FetchMode.SUBSELECT)
-    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "tb_role_acl",joinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
             inverseJoinColumns = @JoinColumn(name = "acl_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
     private List<Authority> authorities=new ArrayList<>();
@@ -114,13 +106,6 @@ public class Role implements Serializable {
         this.updateTime = updateTime;
     }
 
-    public List<Agent> getAgents() {
-        return agents;
-    }
-
-    public void setAgents(List<Agent> agents) {
-        this.agents = agents;
-    }
 
     public List<Authority> getAuthorities() {
         return authorities;

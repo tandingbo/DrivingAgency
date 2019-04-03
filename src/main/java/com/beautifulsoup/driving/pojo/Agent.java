@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "tb_agent")
 @NamedEntityGraph(name = "agent.all",attributeNodes = {
-        @NamedAttributeNode("roles")
+        @NamedAttributeNode("role")
 })
 public class Agent implements Serializable {
 
@@ -45,10 +45,9 @@ public class Agent implements Serializable {
 
     private Integer status;//状态。1表示正常，0表示冻结
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    @JoinTable(name = "tb_age_role",joinColumns = @JoinColumn(name = "age_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")),
-    inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "none")))
-    private List<Role> roles=new ArrayList<>();
+    @OneToOne
+    @JoinColumn(name = "role_id",referencedColumnName = "id")
+    private Role role=new Role();
 
     public Integer getId() {
         return id;
@@ -130,12 +129,12 @@ public class Agent implements Serializable {
         this.parentId = parentId;
     }
 
-    public List<Role> getRoles() {
-        return roles;
+    public Role getRole() {
+        return role;
     }
 
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public Integer getStatus() {

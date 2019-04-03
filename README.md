@@ -17,3 +17,5 @@
 6. Swagger
 
 7. Quartz
+
+8. JWT Token

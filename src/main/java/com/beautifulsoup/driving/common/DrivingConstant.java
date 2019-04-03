@@ -15,4 +15,12 @@ public class DrivingConstant {
         String EMAIL_REGEX="^\\\\w+@(\\\\w+\\\\.){1,2}\\\\w+$";
     }
 
+    public interface Redis{
+        String ADMIN_TOKEN="admin_token:";
+        String AGENT_TOKEN="agent_token:";
+        String ACHIEVEMENT_TOTAL="achievement_total:";
+        String ACHIEVEMENT_DAILY="achievement_daily:";
+        String ACHIEVEMENT_AGENT="achievement_agent:";
+        String LOGIN_AGENTS="login_agents:";
+    }
 }
