@@ -13,6 +13,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -24,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @WebFilter(value = "/**")
@@ -60,10 +63,7 @@ public class LoginFilter implements Filter {
             UserTokenDto userTokenDto= JsonSerializerUtil.string2Obj(subject,UserTokenDto.class);
 
             if (userTokenDto.getParentId()==-1){
-                boolean hasToken = stringRedisTemplate.hasKey(DrivingConstant.Redis.ADMIN_TOKEN+token).booleanValue();
-                if (!hasToken){
-                    throw new AuthenticationException("用户登录状态已失效,请重新登陆");
-                }
+                //管理员账户
                 Boolean hasAdmin = redisTemplate.opsForHash().hasKey(DrivingConstant.Redis.LOGIN_AGENTS,
                         DrivingConstant.Redis.ADMIN_TOKEN + token);
                 if (!hasAdmin.booleanValue()) {
@@ -71,12 +71,14 @@ public class LoginFilter implements Filter {
                     if (agent1==null){
                         throw new AuthenticationException("服务器错误,您的账号已被盗?");
                     }
+                    agent1.setAgentPassword(null);
                     redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
                             DrivingConstant.Redis.ADMIN_TOKEN+token,agent1);
                 }
                Agent agent=(Agent) redisTemplate.opsForHash().get(DrivingConstant.Redis.LOGIN_AGENTS,
                         DrivingConstant.Redis.ADMIN_TOKEN+token);
-                SecurityContextHolder.addAgent(agent);
+               SecurityContextHolder.addAgent(agent);
+
             }else{
 
             }
@@ -84,7 +86,33 @@ public class LoginFilter implements Filter {
             chain.doFilter(request,response);
             return;
         }catch (ExpiredJwtException e){
-            log.error("Token已失效,");
+            log.error("Token已失效");
+            Agent agent=(Agent) redisTemplate.opsForHash().get(DrivingConstant.Redis.LOGIN_AGENTS,
+                    DrivingConstant.Redis.ADMIN_TOKEN+token);
+            boolean isValid = stringRedisTemplate.hasKey(DrivingConstant.Redis.TOKEN_REFRESH + token).booleanValue();
+            if (isValid&&null!=agent){
+                //refresh token  仍然有效
+                Boolean hasKey = stringRedisTemplate.hasKey(DrivingConstant.Redis.TOKEN_BLACKLIST + token);
+                if (hasKey.booleanValue()){
+                    //解决并发环境下问题
+                    return;
+                }
+
+                UserTokenDto userTokenDto=new UserTokenDto();
+                BeanUtils.copyProperties(agent,userTokenDto);
+                String newToken = TokenUtil.conferToken(userTokenDto, DrivingConstant.TOKEN_EXPIRE);
+                ((HttpServletResponse) response).setHeader("Cache-Control","no-store");
+                ((HttpServletResponse) response).setHeader("token",newToken);
+                Long oldExpire = stringRedisTemplate.getExpire(DrivingConstant.Redis.TOKEN_REFRESH + token, TimeUnit.SECONDS);
+                stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH+newToken,UUID.randomUUID().toString());
+                stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH+newToken,oldExpire,TimeUnit.SECONDS);
+                stringRedisTemplate.delete(DrivingConstant.Redis.TOKEN_REFRESH + token);
+                //旧Token加入黑名单
+                stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH + token,newToken);
+                stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH + token,30,TimeUnit.SECONDS);
+                chain.doFilter(request,response);
+                return;
+            }
             throw new AuthenticationException("用户登录状态已失效,请重新登陆");
         }catch (MalformedJwtException e){
             log.error("Token校验错误");

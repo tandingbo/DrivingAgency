@@ -21,9 +21,14 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -39,7 +44,7 @@ public class AgentServiceImpl implements AgentService {
     private RedisTemplate<String, Serializable> redisTemplate;
 
     @Override
-    public AgentBaseInfoVo adminLogin(String username, String password) {
+    public AgentBaseInfoVo adminLogin(String username, String password, HttpServletResponse response) {
         Preconditions.checkArgument(StringUtils.isNotBlank(username),"账户不能为空");
         Preconditions.checkArgument(StringUtils.isNotBlank(password),"密码不能为空");
 
@@ -59,14 +64,17 @@ public class AgentServiceImpl implements AgentService {
         BeanUtils.copyProperties(select,userTokenDto);
         String token = TokenUtil.conferToken(userTokenDto, DrivingConstant.TOKEN_EXPIRE);
 
-        //保存用户状态
-        stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.ADMIN_TOKEN+token,select.getAgentName());
-        stringRedisTemplate.expire(DrivingConstant.Redis.ADMIN_TOKEN+token,DrivingConstant.TOKEN_EXPIRE, TimeUnit.MILLISECONDS);
+        //保存用户状态，redis提高SQL查询性能
+        select.setAgentPassword(null);
         redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
                 DrivingConstant.Redis.ADMIN_TOKEN+token,select);
-        AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
+        stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH+token,UUID.randomUUID().toString());
+        stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH+token,DrivingConstant.REFRESH_TOKEN_EXPIRE,TimeUnit.SECONDS);
 
-        agentBaseInfoVo.setToken(token);
+        response.setHeader("Cache-Control","no-store");
+        response.setHeader("token",token);
+
+        AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
 
         return agentBaseInfoVo;
     }

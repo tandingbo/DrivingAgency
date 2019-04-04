@@ -13,7 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AgentBaseInfoVo {
-    private String token;
     private Integer id;
     private String agentName;
     private String agentPassword;

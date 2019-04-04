@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @Api(tags = "/agent",description = "代理操作",protocols = "http")
@@ -24,9 +25,9 @@ public class AgentController {
     @PostMapping(value = "/admin/login",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<AgentBaseInfoVo> adminLogin(@RequestParam("username")String username,
-                                                      @RequestParam("password")String password){
+                                                      @RequestParam("password")String password, HttpServletResponse response){
 
-        AgentBaseInfoVo baseInfoVo = agentService.adminLogin(username, password);
+        AgentBaseInfoVo baseInfoVo = agentService.adminLogin(username, password,response);
 
         if (baseInfoVo != null) {
             return ResponseResult.createBySuccess("管理员登录成功",baseInfoVo);

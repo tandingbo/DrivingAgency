@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TokenUtil {
-
     private static final String rawKey="8c07b32e-f968-43a7-8160-5279d0ebc328";
 
     public static String conferToken(UserTokenDto agentToken, Long expire){

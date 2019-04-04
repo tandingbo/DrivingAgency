@@ -2,7 +2,8 @@ package com.beautifulsoup.driving.common;
 
 public class DrivingConstant {
 
-    public static final Long TOKEN_EXPIRE=32400000L;//token有效期9小时
+    public static final Long TOKEN_EXPIRE=7200000L;//token有效期2小时
+    public static final Long REFRESH_TOKEN_EXPIRE=604800L;//refresh token有效期1周
 
     public interface File{
         String UPLOAD_EMPTY_ERROR="上传文件不能为空";
@@ -16,11 +17,18 @@ public class DrivingConstant {
     }
 
     public interface Redis{
+        String LOGIN_AGENTS="login_agents:";
         String ADMIN_TOKEN="admin_token:";
         String AGENT_TOKEN="agent_token:";
+        String TOKEN_SECRETS="token_secrets:";
+        String TOKEN_SECRET="token_secret:";
+        String TOKEN_BLACKLIST="token_blacklist:";
+        String TOKEN_REFRESH="token_refresh:";
+
+
         String ACHIEVEMENT_TOTAL="achievement_total:";
         String ACHIEVEMENT_DAILY="achievement_daily:";
         String ACHIEVEMENT_AGENT="achievement_agent:";
-        String LOGIN_AGENTS="login_agents:";
+
     }
 }

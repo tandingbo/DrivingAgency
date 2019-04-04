@@ -16,13 +16,20 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Slf4j
 public class DrivingApplicationTests {
 
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Test
     public void contextLoads() {
@@ -75,7 +82,13 @@ public class DrivingApplicationTests {
         }catch (MalformedJwtException e){
             log.error("token 校验错误");
         }
+    }
 
+    @Test
+    public void expireKey(){
+        String uuid=UUID.randomUUID().toString();
+        stringRedisTemplate.opsForValue().set(uuid,uuid);
+        stringRedisTemplate.expire(uuid,3600, TimeUnit.SECONDS);
     }
 
 }

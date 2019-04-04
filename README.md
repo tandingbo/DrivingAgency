@@ -19,3 +19,8 @@
 7. Quartz
 
 8. JWT Token
+
+## 要点
+1. 热点数据入Redis,提高SQL的查询性能
+2. 认证采用Jwt Token+Refresh Token策略,提高用户体验
+3. 权限管理采用规范的RBAC权限模型
