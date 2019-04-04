@@ -42,7 +42,7 @@ public class Agent implements Serializable {
 
     private Integer agentAchieve;//总业绩
 
-    private Integer parentId;//超级管理员父节点不存在,为-1.
+    private Integer parentId;//超级管理员父节点不存在,为0
 
     private Integer status;//状态。1表示正常，0表示冻结
 
