@@ -15,14 +15,10 @@ import lombok.Setter;
 public class AgentBaseInfoVo {
     private Integer id;
     private String agentName;
-    private String agentPassword;
     private String agentPhone;
     private String agentEmail;
-    private String agentIdcard;
-    private String agentIdcardImg;
     private String agentSchool;
     private Integer agentAchieve;//总业绩
-    private Integer parentId;//超级管理员父节点不存在,为-1.
     private Integer status;//状态。1表示正常，0表示冻结
     private Role role;
 }

@@ -22,18 +22,18 @@ public class AgentController {
     @Autowired
     private AgentService agentService;
 
-    @PostMapping(value = "/admin/login",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/login",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<AgentBaseInfoVo> adminLogin(@RequestParam("username")String username,
                                                       @RequestParam("password")String password, HttpServletResponse response){
 
-        AgentBaseInfoVo baseInfoVo = agentService.adminLogin(username, password,response);
+        AgentBaseInfoVo baseInfoVo = agentService.login(username, password,response);
 
         if (baseInfoVo != null) {
-            return ResponseResult.createBySuccess("管理员登录成功",baseInfoVo);
+            return ResponseResult.createBySuccess("用户登录成功",baseInfoVo);
         }
 
-        return ResponseResult.createByError("管理员登录失败");
+        return ResponseResult.createByError("用户登录失败");
     }
 
     @PostMapping(value = "/logout",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -44,6 +44,18 @@ public class AgentController {
             return ResponseResult.createBySuccess("登出成功",baseInfoVo);
         }
         return ResponseResult.createByError("登出失败");
+    }
+
+    @PostMapping(value = "/password/reset",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<AgentBaseInfoVo> passwordReset(@RequestHeader(value = "token",required = true)String token
+    ,@RequestParam("username")String username,@RequestParam("newPassword")String newPassword,@RequestParam("password")String password
+    ,@RequestParam("email")String email){
+        AgentBaseInfoVo baseInfoVo = agentService.resetPassword(token,username,newPassword,password,email);
+        if (baseInfoVo != null) {
+            return ResponseResult.createBySuccess("密码重置成功",baseInfoVo);
+        }
+        return ResponseResult.createByError("密码重置失败");
     }
 
     @PostMapping(value = "/add",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

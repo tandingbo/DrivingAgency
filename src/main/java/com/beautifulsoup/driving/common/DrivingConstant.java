@@ -18,7 +18,6 @@ public class DrivingConstant {
 
     public interface Redis{
         String LOGIN_AGENTS="login_agents:";
-        String ADMIN_TOKEN="admin_token:";
         String AGENT_TOKEN="agent_token:";
         String TOKEN_SECRETS="token_secrets:";
         String TOKEN_SECRET="token_secret:";

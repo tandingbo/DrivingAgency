@@ -7,7 +7,8 @@ import org.springframework.validation.BindingResult;
 import javax.servlet.http.HttpServletResponse;
 
 public interface AgentService {
-    AgentBaseInfoVo adminLogin(String username, String password, HttpServletResponse response);
+    AgentBaseInfoVo login(String username, String password, HttpServletResponse response);
     AgentBaseInfoVo addNewAgent(AgentDto agentDto, BindingResult result);
     AgentBaseInfoVo logout(String token);
+    AgentBaseInfoVo resetPassword(String token, String username, String newPassword, String password, String email);
 }

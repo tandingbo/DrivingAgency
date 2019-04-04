@@ -26,6 +26,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.TileObserver;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
@@ -46,19 +47,19 @@ public class AgentServiceImpl implements AgentService {
     private RedisTemplate<String, Serializable> redisTemplate;
 
     @Override
-    public AgentBaseInfoVo adminLogin(String username, String password, HttpServletResponse response) {
+    public AgentBaseInfoVo login(String username, String password, HttpServletResponse response) {
         Preconditions.checkArgument(StringUtils.isNotBlank(username),"账户不能为空");
         Preconditions.checkArgument(StringUtils.isNotBlank(password),"密码不能为空");
 
-        Agent select = agentRepository.findAgentByAgentNameAndParentId(username,-1);
+        Agent select = agentRepository.findAgentByAgentName(username);
 
         if (select == null) {
-            throw new AuthenticationException("账户不存在,管理员登陆失败");
+            throw new AuthenticationException("账户不存在,登陆失败");
         }
 
         String input= MD5Util.MD5Encode(password);
         if (!StringUtils.equals(input,select.getAgentPassword())){
-            throw new AuthenticationException("密码错误,管理员登录失败");
+            throw new AuthenticationException("密码错误,登录失败");
         }
 
 
@@ -70,16 +71,14 @@ public class AgentServiceImpl implements AgentService {
         //保存用户状态，redis提高SQL查询性能
         select.setAgentPassword(null);
         redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
-                DrivingConstant.Redis.ADMIN_TOKEN+token,select);
+                DrivingConstant.Redis.AGENT_TOKEN+token,select);
         stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH+token,UUID.randomUUID().toString());
         stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH+token,DrivingConstant.REFRESH_TOKEN_EXPIRE,TimeUnit.SECONDS);
-
-
         response.setHeader("Cache-Control","no-store");
         response.setHeader("token",token);
 
         AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
-
+        BeanUtils.copyProperties(select,agentBaseInfoVo);
         return agentBaseInfoVo;
     }
 
@@ -109,6 +108,23 @@ public class AgentServiceImpl implements AgentService {
             return agentBaseInfoVo;
         }catch (Exception e){
             log.error("登出失败:{}",e);
+        }
+        return null;
+    }
+
+    @Override
+    public AgentBaseInfoVo resetPassword(String token,String username, String newPassword, String password, String email) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(token),"token不能为空");
+        try {
+            Claims claims = TokenUtil.parseJWT(token);
+
+            stringRedisTemplate.opsForHash().put(DrivingConstant.Redis.TOKEN_INVALID, token, DateTimeUtil.dateToMillis(new Date()));
+            UserTokenDto userTokenDto= JsonSerializerUtil.string2Obj(claims.getSubject(),UserTokenDto.class);
+            AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
+            BeanUtils.copyProperties(userTokenDto,agentBaseInfoVo);
+            return agentBaseInfoVo;
+        }catch (Exception e){
+            log.error("密码重置失败:{}",e);
         }
         return null;
     }

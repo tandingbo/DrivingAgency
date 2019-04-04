@@ -59,8 +59,10 @@ public class AgentRepositoryTest {
 
     @Test
     public void findAllAgentInfo(){
-        List<Agent> all = agentRepository.findAll();
-        log.info(Arrays.toString(all.toArray()));
+//        List<Agent> all = agentRepository.findAll();
+//        log.info(Arrays.toString(all.toArray()));
+        Agent admin = agentRepository.findAgentByAgentName("Admin");
+        log.info(admin.toString());
     }
 
 

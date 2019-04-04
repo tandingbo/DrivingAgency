@@ -70,36 +70,27 @@ public class LoginFilter implements Filter {
             String subject = claims.getSubject();
             log.info(subject);
             UserTokenDto userTokenDto= JsonSerializerUtil.string2Obj(subject,UserTokenDto.class);
-
-            if (userTokenDto.getParentId()==-1){
-                //管理员账户
-                Boolean hasAdmin = redisTemplate.opsForHash().hasKey(DrivingConstant.Redis.LOGIN_AGENTS,
-                        DrivingConstant.Redis.ADMIN_TOKEN + token);
-                if (!hasAdmin.booleanValue()) {
-                    Agent agent1 = agentRepository.findAgentByAgentNameAndParentId(userTokenDto.getAgentName(),-1);
-                    if (agent1==null){
-                        ResponseUtil.errorAuthentication(servletResponse,"管理员账户异常");
-                        return;
-                    }
-                    agent1.setAgentPassword(null);
-                    redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
-                            DrivingConstant.Redis.ADMIN_TOKEN+token,agent1);
+            Boolean hasAdmin = redisTemplate.opsForHash().hasKey(DrivingConstant.Redis.LOGIN_AGENTS,
+                        DrivingConstant.Redis.AGENT_TOKEN + token);
+            if (!hasAdmin.booleanValue()) {
+                Agent agent1 = agentRepository.findAgentByAgentName(userTokenDto.getAgentName());
+                if (agent1==null){
+                    ResponseUtil.errorAuthentication(servletResponse,"账户异常");
+                    return;
                 }
-               Agent agent=(Agent) redisTemplate.opsForHash().get(DrivingConstant.Redis.LOGIN_AGENTS,
-                        DrivingConstant.Redis.ADMIN_TOKEN+token);
-               SecurityContextHolder.addAgent(agent);
-
-            }else{
-                //普通代理账户
-
+                agent1.setAgentPassword(null);
+                redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
+                            DrivingConstant.Redis.AGENT_TOKEN+token,agent1);
             }
-
+            Agent agent=(Agent) redisTemplate.opsForHash().get(DrivingConstant.Redis.LOGIN_AGENTS,
+                        DrivingConstant.Redis.AGENT_TOKEN+token);
+            SecurityContextHolder.addAgent(agent);
             chain.doFilter(servletRequest,servletResponse);
             return;
         }catch (ExpiredJwtException e){
             log.error("Token已失效");
             Agent agent=(Agent) redisTemplate.opsForHash().get(DrivingConstant.Redis.LOGIN_AGENTS,
-                    DrivingConstant.Redis.ADMIN_TOKEN+token);
+                    DrivingConstant.Redis.AGENT_TOKEN+token);
             boolean isValid = stringRedisTemplate.hasKey(DrivingConstant.Redis.TOKEN_REFRESH + token).booleanValue();
             if (isValid&&null!=agent){
                 //refresh token  仍然有效
@@ -120,22 +111,16 @@ public class LoginFilter implements Filter {
                 stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH+newToken,UUID.randomUUID().toString());
                 stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH+newToken,oldExpire,TimeUnit.SECONDS);
                 stringRedisTemplate.delete(DrivingConstant.Redis.TOKEN_REFRESH + token);
-                //旧Token加入黑名单
+                //旧Token加入黑名单,解决并发下的问题
                 stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_BLACKLIST + token,newToken);
                 stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_BLACKLIST + token,30,TimeUnit.SECONDS);
                 redisTemplate.opsForHash().delete(DrivingConstant.Redis.LOGIN_AGENTS,
-                        DrivingConstant.Redis.ADMIN_TOKEN+token);
+                        DrivingConstant.Redis.AGENT_TOKEN+token);
                 //继续当前请求,状态仍然需要维护
-                if (httpServletRequest.getRequestURI().contains("admin")){
-                    //管理员账户
-                    Agent admin = agentRepository.findAgentByAgentNameAndParentId(userTokenDto.getAgentName(),-1);
-                    redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
-                            DrivingConstant.Redis.ADMIN_TOKEN+newToken,admin);
-                    SecurityContextHolder.addAgent(admin);
-                }else{
-                    //普通代理账户
-
-                }
+                Agent agent1 = agentRepository.findAgentByAgentName(userTokenDto.getAgentName());
+                redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
+                         DrivingConstant.Redis.AGENT_TOKEN+newToken,agent1);
+                SecurityContextHolder.addAgent(agent1);
                 chain.doFilter(httpServletRequest,httpServletResponse);
                 return;
             }
