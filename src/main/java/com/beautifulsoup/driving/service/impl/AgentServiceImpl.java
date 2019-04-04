@@ -8,12 +8,12 @@ import com.beautifulsoup.driving.exception.AuthenticationException;
 import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.repository.AgentRepository;
 import com.beautifulsoup.driving.service.AgentService;
-import com.beautifulsoup.driving.utils.MD5Util;
-import com.beautifulsoup.driving.utils.ParamValidatorUtil;
-import com.beautifulsoup.driving.utils.TokenUtil;
+import com.beautifulsoup.driving.utils.*;
 import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +27,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class AgentServiceImpl implements AgentService {
 
@@ -55,11 +57,12 @@ public class AgentServiceImpl implements AgentService {
         }
 
         String input= MD5Util.MD5Encode(password);
-        if (!StringUtils.equals(input,password)){
+        if (!StringUtils.equals(input,select.getAgentPassword())){
             throw new AuthenticationException("密码错误,管理员登录失败");
         }
 
-        //账户登陆成功
+
+
         UserTokenDto userTokenDto=new UserTokenDto();
         BeanUtils.copyProperties(select,userTokenDto);
         String token = TokenUtil.conferToken(userTokenDto, DrivingConstant.TOKEN_EXPIRE);
@@ -70,6 +73,7 @@ public class AgentServiceImpl implements AgentService {
                 DrivingConstant.Redis.ADMIN_TOKEN+token,select);
         stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH+token,UUID.randomUUID().toString());
         stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH+token,DrivingConstant.REFRESH_TOKEN_EXPIRE,TimeUnit.SECONDS);
+
 
         response.setHeader("Cache-Control","no-store");
         response.setHeader("token",token);
@@ -87,14 +91,27 @@ public class AgentServiceImpl implements AgentService {
 
         Agent authentication = SecurityContextHolder.getAgent();
 
-//        authentication.getRole().
+
 
 
         return null;
     }
 
-
-
+    @Override
+    public AgentBaseInfoVo logout(String token) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(token),"token不能为空");
+        try {
+            Claims claims = TokenUtil.parseJWT(token);
+            stringRedisTemplate.opsForHash().put(DrivingConstant.Redis.TOKEN_INVALID, token, DateTimeUtil.dateToMillis(new Date()));
+            UserTokenDto userTokenDto= JsonSerializerUtil.string2Obj(claims.getSubject(),UserTokenDto.class);
+            AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
+            BeanUtils.copyProperties(userTokenDto,agentBaseInfoVo);
+            return agentBaseInfoVo;
+        }catch (Exception e){
+            log.error("登出失败:{}",e);
+        }
+        return null;
+    }
 
 
 }

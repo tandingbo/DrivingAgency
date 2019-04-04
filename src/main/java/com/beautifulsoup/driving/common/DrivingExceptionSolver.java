@@ -20,7 +20,7 @@ public class DrivingExceptionSolver {
     @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseResult<Map<String,Object>> paramExceptionResolver(ParamException exception){
         Map<String,Object> response= Maps.newConcurrentMap();
-        response.put("error",exception.getErrorDescription());
+        response.put("error",exception.getErrorMessage());
         return ResponseResult.createByError(ResponseCode.ILLEGAL_ARGUMENTS.getCode(),
                 ResponseCode.ILLEGAL_ARGUMENTS.getDesc(),response);
     }

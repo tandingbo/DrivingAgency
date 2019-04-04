@@ -9,4 +9,5 @@ import javax.servlet.http.HttpServletResponse;
 public interface AgentService {
     AgentBaseInfoVo adminLogin(String username, String password, HttpServletResponse response);
     AgentBaseInfoVo addNewAgent(AgentDto agentDto, BindingResult result);
+    AgentBaseInfoVo logout(String token);
 }

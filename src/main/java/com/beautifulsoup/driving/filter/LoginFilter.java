@@ -3,9 +3,11 @@ package com.beautifulsoup.driving.filter;
 import com.beautifulsoup.driving.common.DrivingConstant;
 import com.beautifulsoup.driving.common.SecurityContextHolder;
 import com.beautifulsoup.driving.dto.UserTokenDto;
+import com.beautifulsoup.driving.exception.AuthenticationException;
 import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.repository.AgentRepository;
 import com.beautifulsoup.driving.utils.JsonSerializerUtil;
+import com.beautifulsoup.driving.utils.ResponseUtil;
 import com.beautifulsoup.driving.utils.TokenUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -18,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import javax.security.sasl.AuthenticationException;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@WebFilter(value = "/**")
+@WebFilter(value = {"/agent/add"},filterName = "loginFilter")
 public class LoginFilter implements Filter {
 
 
@@ -54,7 +56,14 @@ public class LoginFilter implements Filter {
         HttpServletResponse servletResponse= (HttpServletResponse) response;
         String token = servletRequest.getHeader("token");
         if (StringUtils.isBlank(token)){
-            throw new AuthenticationException("用户未登录,请登录");
+            ResponseUtil.errorAuthentication(servletResponse,"用户未登录,请登录后访问");
+            return;
+        }
+        //检查黑名单
+        Boolean token_status = stringRedisTemplate.opsForHash().hasKey(DrivingConstant.Redis.TOKEN_INVALID, token);
+        if (token_status.booleanValue()){
+            ResponseUtil.warningAuthentication(servletResponse,"用户登录状态已失效,请重新登陆");
+            return;
         }
         try {
             Claims claims = TokenUtil.parseJWT(token);
@@ -69,7 +78,8 @@ public class LoginFilter implements Filter {
                 if (!hasAdmin.booleanValue()) {
                     Agent agent1 = agentRepository.findAgentByAgentNameAndParentId(userTokenDto.getAgentName(),-1);
                     if (agent1==null){
-                        throw new AuthenticationException("服务器错误,您的账号已被盗?");
+                        ResponseUtil.errorAuthentication(servletResponse,"管理员账户异常");
+                        return;
                     }
                     agent1.setAgentPassword(null);
                     redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
@@ -80,10 +90,11 @@ public class LoginFilter implements Filter {
                SecurityContextHolder.addAgent(agent);
 
             }else{
+                //普通代理账户
 
             }
 
-            chain.doFilter(request,response);
+            chain.doFilter(servletRequest,servletResponse);
             return;
         }catch (ExpiredJwtException e){
             log.error("Token已失效");
@@ -101,25 +112,43 @@ public class LoginFilter implements Filter {
                 UserTokenDto userTokenDto=new UserTokenDto();
                 BeanUtils.copyProperties(agent,userTokenDto);
                 String newToken = TokenUtil.conferToken(userTokenDto, DrivingConstant.TOKEN_EXPIRE);
-                ((HttpServletResponse) response).setHeader("Cache-Control","no-store");
-                ((HttpServletResponse) response).setHeader("token",newToken);
+                HttpServletResponse httpServletResponse=(HttpServletResponse) response;
+                HttpServletRequest httpServletRequest=(HttpServletRequest)request;
+                httpServletResponse.setHeader("Cache-Control","no-store");
+                httpServletResponse.setHeader("token",newToken);
                 Long oldExpire = stringRedisTemplate.getExpire(DrivingConstant.Redis.TOKEN_REFRESH + token, TimeUnit.SECONDS);
                 stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH+newToken,UUID.randomUUID().toString());
                 stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH+newToken,oldExpire,TimeUnit.SECONDS);
                 stringRedisTemplate.delete(DrivingConstant.Redis.TOKEN_REFRESH + token);
                 //旧Token加入黑名单
-                stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH + token,newToken);
-                stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH + token,30,TimeUnit.SECONDS);
-                chain.doFilter(request,response);
+                stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_BLACKLIST + token,newToken);
+                stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_BLACKLIST + token,30,TimeUnit.SECONDS);
+                redisTemplate.opsForHash().delete(DrivingConstant.Redis.LOGIN_AGENTS,
+                        DrivingConstant.Redis.ADMIN_TOKEN+token);
+                //继续当前请求,状态仍然需要维护
+                if (httpServletRequest.getRequestURI().contains("admin")){
+                    //管理员账户
+                    Agent admin = agentRepository.findAgentByAgentNameAndParentId(userTokenDto.getAgentName(),-1);
+                    redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
+                            DrivingConstant.Redis.ADMIN_TOKEN+newToken,admin);
+                    SecurityContextHolder.addAgent(admin);
+                }else{
+                    //普通代理账户
+
+                }
+                chain.doFilter(httpServletRequest,httpServletResponse);
                 return;
             }
-            throw new AuthenticationException("用户登录状态已失效,请重新登陆");
+            ResponseUtil.warningAuthentication(servletResponse,"用户登录状态已失效,请重新登陆");
+            return;
         }catch (MalformedJwtException e){
             log.error("Token校验错误");
-            throw new AuthenticationException("token校验错误,用户认证失败");
+            ResponseUtil.warningAuthentication(servletResponse,"token校验错误,用户认证失败");
+            return;
         }catch (SignatureException e){
             log.error("签名错误");
-            throw new AuthenticationException("Token签名错误,用户认证失败");
+            ResponseUtil.warningAuthentication(servletResponse,"Token签名错误,用户认证失败");
+            return;
         }
 
 

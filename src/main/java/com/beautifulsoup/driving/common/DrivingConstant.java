@@ -24,7 +24,7 @@ public class DrivingConstant {
         String TOKEN_SECRET="token_secret:";
         String TOKEN_BLACKLIST="token_blacklist:";
         String TOKEN_REFRESH="token_refresh:";
-
+        String TOKEN_INVALID="token_invalid:";
 
         String ACHIEVEMENT_TOTAL="achievement_total:";
         String ACHIEVEMENT_DAILY="achievement_daily:";

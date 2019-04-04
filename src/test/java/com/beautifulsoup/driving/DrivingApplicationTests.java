@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Slf4j
+@WebAppConfiguration
 public class DrivingApplicationTests {
 
 
@@ -67,7 +69,8 @@ public class DrivingApplicationTests {
     @Test
     public void parseJWT(){
         try{
-            String token ="eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJhZ2VudE5hbWVcIjpcIkFkbWluXCIsXCJhZ2VudFBhc3N3b3JkXCI6XCJlMTBhZGMzOTQ5YmE1OWFiYmU1NmUwNTdmMjBmODgzZVwiLFwiYWdlbnRQaG9uZVwiOlwiMTc4NjQxOTUyMDBcIixcImFnZW50RW1haWxcIjpcImJlYXV0aWZ1bHNvdXBAMTYzLmNvbVwiLFwiYWdlbnRJZGNhcmRcIjpcIjM3MjMzMDAwMDAwNzc3NzY2MzIyMFwiLFwiYWdlbnRJZGNhcmRJbWdcIjpcImh0dHA6Ly8zOS4xMDYuNjIuMTYxOjg4ODgvZHJpdmluZy9NMDAvMDAvMDAvMTExXCIsXCJhZ2VudFNjaG9vbFwiOlwi5bGx5Lic5biI6IyD5aSn5a2mXCIsXCJwYXJlbnRJZFwiOi0xLFwic3RhdHVzXCI6MSxcInJvbGVzXCI6W119IiwibmFtZSI6IkJlYXV0aWZ1bFNvdXAiLCJpc3MiOiJCZWF1dGlmdWxTb3VwIiwiYWRtaW4iOnRydWUsImV4cCI6MTU1NDI4MTk2NSwiaWF0IjoxNTU0MjgxOTYwLCJqdGkiOiJqd3QifQ.bkvcadwruzqYC1hq_dV3zzmGfsygBhmp-kwiAgPhToC8PsU7DryaUJrgq9DYAUqknKk3IsCiOc47lriPr2LzPA";
+            String token ="eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJhZ2VudE5hbWVcIjpcIkFkbWluXCIsXCJwYXJlbnRJZFwiOi0xLFwic3RhdHVzXCI6MSxcImFnZW50U2Nob29sXCI6XCLlsbHkuJzluIjojIPlpKflraZcIn0iLCJuYW1lIjoiQmVhdXRpZnVsU291cCIsImlzcyI6IkJlYXV0aWZ1bFNvdXAiLCJhZG1pbiI6dHJ1ZSwiZXhwIjoxNTU0MzU4MDA4LCJpYXQiOjE1NTQzNTA4MDgsImp0aSI6Imp3dCJ9.n6036PDZ2FijD9KkeX1tRHXhjTHcqqDl5ynviDfqy9FpkpYTEEJZkPPA4OUqEIPjulmSY0RGJlrfXXAR9nbY7g";
+            String token2="eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJhZ2VudE5hbWVcIjpcIkFkbWluXCIsXCJwYXJlbnRJZFwiOi0xLFwic3RhdHVzXCI6MSxcImFnZW50U2Nob29sXCI6XCLlsbHkuJzluIjojIPlpKflraZcIn0iLCJuYW1lIjoiQmVhdXRpZnVsU291cCIsImlzcyI6IkJlYXV0aWZ1bFNvdXAiLCJhZG1pbiI6dHJ1ZSwiZXhwIjoxNTU0MzYwNDEzLCJpYXQiOjE1NTQzNTMyMTMsImp0aSI6Imp3dCJ9.4Nae2EthLjuThyn48jRmwcYjSBwR3E2grBJZoisrrWw0gfYF_0Yq4JxtM2SHpX15G3V_eZDLwRHuFUnvkCT8xQ";
             Claims claims = TokenUtil.parseJWT(token);
             log.info(claims.getId());
             log.info(claims.getIssuer());
@@ -89,6 +92,14 @@ public class DrivingApplicationTests {
         String uuid=UUID.randomUUID().toString();
         stringRedisTemplate.opsForValue().set(uuid,uuid);
         stringRedisTemplate.expire(uuid,3600, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void md5Password(){
+//        String encode = MD5Util.MD5Encode("123456");
+//        log.info(encode);
+//        String token1="eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJhZ2VudE5hbWVcIjpcIkFkbWluXCIsXCJwYXJlbnRJZFwiOi0xLFwic3RhdHVzXCI6MSxcImFnZW50U2Nob29sXCI6XCLlsbHkuJzluIjojIPlpKflraZcIn0iLCJuYW1lIjoiQmVhdXRpZnVsU291cCIsImlzcyI6IkJlYXV0aWZ1bFNvdXAiLCJhZG1pbiI6dHJ1ZSwiZXhwIjoxNTU0MzU1OTcxLCJpYXQiOjE1NTQzNDg3NzEsImp0aSI6Imp3dCJ9.piIeUfJkyy0sq_iFe6qlTn5OU3Kj7S55imyyj4t1El2oNvHE2j0j9EbF2sf9iU24JtFYpmF0Klf0MWTgt8QV7Q";
+//        String token2="eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJhZ2VudE5hbWVcIjpcIkFkbWluXCIsXCJwYXJlbnRJZFwiOi0xLFwic3RhdHVzXCI6MSxcImFnZW50U2Nob29sXCI6XCLlsbHkuJzluIjojIPlpKflraZcIn0iLCJuYW1lIjoiQmVhdXRpZnVsU291cCIsImlzcyI6IkJlYXV0aWZ1bFNvdXAiLCJhZG1pbiI6dHJ1ZSwiZXhwIjoxNTU0MzU2MDY3LCJpYXQiOjE1NTQzNDg4NjcsImp0aSI6Imp3dCJ9.XLM71GlcPltBjBiBgYQixL95Bp-q7Q-l-60-y6i2zQFVABIjfZU9ZGRMQh3Gao262D_KPGFyKMnHQBALumD1WQ";
     }
 
 }

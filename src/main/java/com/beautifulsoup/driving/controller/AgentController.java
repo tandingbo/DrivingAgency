@@ -36,6 +36,16 @@ public class AgentController {
         return ResponseResult.createByError("管理员登录失败");
     }
 
+    @PostMapping(value = "/logout",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<AgentBaseInfoVo> logout(@RequestHeader(value = "token",required = true)String token){
+        AgentBaseInfoVo baseInfoVo = agentService.logout(token);
+        if (baseInfoVo != null) {
+            return ResponseResult.createBySuccess("登出成功",baseInfoVo);
+        }
+        return ResponseResult.createByError("登出失败");
+    }
+
     @PostMapping(value = "/add",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<AgentBaseInfoVo> addNewAgent(@Valid @RequestBody AgentDto agentDto, BindingResult result){
