@@ -92,19 +92,6 @@ public class AgentServiceImpl implements AgentService {
         return agentBaseInfoVo;
     }
 
-    @Override
-    public AgentBaseInfoVo addNewAgent(AgentDto agentDto, BindingResult result) {
-        ParamValidatorUtil.validateBindingResult(result);
-        Agent agent=new Agent();
-        BeanUtils.copyProperties(agentDto,agent);
-
-        Agent authentication = SecurityContextHolder.getAgent();
-
-
-
-
-        return null;
-    }
 
     @Override
     public AgentBaseInfoVo logout(String token) {

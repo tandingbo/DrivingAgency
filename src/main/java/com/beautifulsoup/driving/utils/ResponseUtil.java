@@ -50,6 +50,24 @@ public class ResponseUtil {
         }finally {
             out.close();
         }
+    }
 
+    public static void warningAccessDenied(HttpServletResponse response, String warningMsg) {
+        PrintWriter out=null;
+        try {
+            Map<String,Object> data= Maps.newConcurrentMap();
+            data.put("error",warningMsg);
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+            ResponseResult responseResult= ResponseResult.createByError(ResponseCode.AUTHENTICATION_FAILURE.getCode()
+                    ,ResponseCode.AUTHENTICATION_FAILURE.getDesc(),data);
+            out=response.getWriter() ;
+            out.write(JsonSerializerUtil.obj2String(responseResult));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            out.close();
+        }
     }
 }

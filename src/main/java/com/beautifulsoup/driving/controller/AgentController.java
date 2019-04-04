@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Map;
 
-@Api(tags = "/agent",description = "代理操作",protocols = "http")
+@Api(tags = "/agent",description = "账户信息",protocols = "http")
 @Controller
 @RequestMapping(value = "/agent")
 public class AgentController {
@@ -99,14 +99,5 @@ public class AgentController {
         return ResponseResult.createByError("账户信息获取失败");
     }
 
-    @PostMapping(value = "/add",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ResponseBody
-    public ResponseResult<AgentBaseInfoVo> addNewAgent(@Valid @RequestBody AgentDto agentDto, BindingResult result){
-        AgentBaseInfoVo agentBaseInfoVo = agentService.addNewAgent(agentDto, result);
-        if (agentBaseInfoVo != null) {
-            return ResponseResult.createBySuccess("代理添加成功",agentBaseInfoVo);
-        }
-        return ResponseResult.createByError("代理添加失败");
-    }
 
 }
