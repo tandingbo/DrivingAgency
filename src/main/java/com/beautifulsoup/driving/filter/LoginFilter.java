@@ -32,21 +32,22 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@Order(value = 1)
-@WebFilter(value = {"/agent/add", "/agent/sendmail","/agent/update","/agent/get"},
-        filterName = "loginFilter")
+//@Order(value = 1)
+//@WebFilter(value = {"/manage/*","/agent/add", "/agent/sendmail","/agent/update","/agent/get","/student/*"},
+//        filterName = "loginFilter")
 public class LoginFilter implements Filter {
 
-
-
-    @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-    @Autowired
     private RedisTemplate<String,Serializable> redisTemplate;
 
-    @Autowired
     private AgentRepository agentRepository;
+
+    public LoginFilter(StringRedisTemplate stringRedisTemplate, RedisTemplate<String, Serializable> redisTemplate, AgentRepository agentRepository) {
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.redisTemplate = redisTemplate;
+        this.agentRepository = agentRepository;
+    }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {

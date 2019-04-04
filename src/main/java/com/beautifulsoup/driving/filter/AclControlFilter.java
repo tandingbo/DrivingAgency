@@ -8,10 +8,8 @@ import com.beautifulsoup.driving.pojo.Authority;
 import com.beautifulsoup.driving.utils.ResponseUtil;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.annotation.Order;
 
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -19,9 +17,9 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j
-@Order(value = 2)
-@WebFilter(value = {"/manage/*","/student/*"},
-        filterName = "aclControlFilter")
+//@Order(value = 2)
+//@WebFilter(value = {},
+//        filterName = "manageFilter")
 public class AclControlFilter implements Filter {
 
     private static Set<String> exclusionUrlSet = Sets.newConcurrentHashSet();
