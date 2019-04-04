@@ -20,7 +20,11 @@
 
 8. JWT Token
 
+9. FastDFS
+
 ## 要点
 1. 热点数据入Redis,提高SQL的查询性能
 2. 认证采用Jwt Token+Refresh Token策略,提高用户体验
 3. 权限管理采用规范的RBAC权限模型
+4. 点赞、排行等数据入Redis,每天进行一次Quartz任务调度,Redis中数据落库
+

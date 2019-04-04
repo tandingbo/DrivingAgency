@@ -55,11 +55,12 @@ public class AgentServiceImpl implements AgentService {
         }
 
         String input= MD5Util.MD5Encode(password);
-        if (!StringUtils.equals(input,password)){
+        if (!StringUtils.equals(input,select.getAgentPassword())){
             throw new AuthenticationException("密码错误,管理员登录失败");
         }
 
-        //账户登陆成功
+
+
         UserTokenDto userTokenDto=new UserTokenDto();
         BeanUtils.copyProperties(select,userTokenDto);
         String token = TokenUtil.conferToken(userTokenDto, DrivingConstant.TOKEN_EXPIRE);
@@ -70,6 +71,7 @@ public class AgentServiceImpl implements AgentService {
                 DrivingConstant.Redis.ADMIN_TOKEN+token,select);
         stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_REFRESH+token,UUID.randomUUID().toString());
         stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_REFRESH+token,DrivingConstant.REFRESH_TOKEN_EXPIRE,TimeUnit.SECONDS);
+
 
         response.setHeader("Cache-Control","no-store");
         response.setHeader("token",token);
@@ -87,7 +89,7 @@ public class AgentServiceImpl implements AgentService {
 
         Agent authentication = SecurityContextHolder.getAgent();
 
-//        authentication.getRole().
+
 
 
         return null;

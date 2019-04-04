@@ -1,7 +1,10 @@
 package com.beautifulsoup.driving.config;
 
+import com.beautifulsoup.driving.filter.LoginFilter;
 import com.beautifulsoup.driving.interceptor.UserInfoInterceptor;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -12,5 +15,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new UserInfoInterceptor()).addPathPatterns("/**");
     }
+
 
 }

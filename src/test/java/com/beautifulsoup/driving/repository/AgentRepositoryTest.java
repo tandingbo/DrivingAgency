@@ -43,7 +43,7 @@ public class AgentRepositoryTest {
         Agent agent=new Agent();
         BeanUtils.copyProperties(agentDto,agent);
 
-        Role role=roleRepository.findById(1).get();
+        Role role=roleRepository.findById(2).get();
         agent.setRole(role);
         agentRepository.saveAndFlush(agent);
     }
