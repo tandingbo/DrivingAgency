@@ -3,6 +3,7 @@ package com.beautifulsoup.driving.service.impl;
 import com.beautifulsoup.driving.common.DrivingConstant;
 import com.beautifulsoup.driving.common.SecurityContextHolder;
 import com.beautifulsoup.driving.dto.AgentDto;
+import com.beautifulsoup.driving.dto.AgentNewDto;
 import com.beautifulsoup.driving.dto.UserTokenDto;
 import com.beautifulsoup.driving.exception.AuthenticationException;
 import com.beautifulsoup.driving.exception.ParamException;
@@ -163,8 +164,10 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
-    public String sendEmail(String username, String email) {
-        Agent dbAgent = agentRepository.findAgentByAgentName(username);
+    public String sendEmail(String email) {
+        Agent dbAgent = SecurityContextHolder.getAgent();
+        ParamValidatorUtil.validateContextHolderAgent(dbAgent);
+
         if (!StringUtils.equals(email,dbAgent.getAgentEmail())){
                 throw new ParamException("邮箱地址不正确,请输入您注册时的邮箱地址修改密码");
         }
@@ -172,11 +175,44 @@ public class AgentServiceImpl implements AgentService {
                 ,RandomUtils.nextInt(1,10),RandomUtils.nextInt(1,10),RandomUtils.nextInt(1,10),RandomUtils.nextInt(1,10),
                 RandomUtils.nextInt(1,10));
         String validateCode = immutableList.parallelStream().map(String::valueOf).collect(Collectors.joining(""));
-        stringRedisTemplate.opsForValue().set(EMAIL_VALIDATE_CODE_PREFIX+username,validateCode);
-        stringRedisTemplate.expire(EMAIL_VALIDATE_CODE_PREFIX+username,10, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(EMAIL_VALIDATE_CODE_PREFIX+dbAgent.getAgentName(),validateCode);
+        stringRedisTemplate.expire(EMAIL_VALIDATE_CODE_PREFIX+dbAgent.getAgentName(),10, TimeUnit.MINUTES);
         mailSenderUtil.sendSimpleMail(email,"【驾校代理小程序验证码】",
                 "亲，感谢您选择本驾校代理软件。您的本次验证码为:"+validateCode+" 。"+"此验证码有效期10分钟,请您尽快处理。");
         return "邮件发送成功";
+    }
+
+    @Override
+    public AgentBaseInfoVo updateAgentInfo(AgentNewDto agentNewDto,
+                                           BindingResult result,String token) {
+        ParamValidatorUtil.validateBindingResult(result);
+        Agent dbAgent=SecurityContextHolder.getAgent();
+        ParamValidatorUtil.validateContextHolderAgent(dbAgent);
+        if (StringUtils.isNotBlank(agentNewDto.getAgentPhone())){
+            dbAgent.setAgentPhone(agentNewDto.getAgentPhone());
+        }
+        if (StringUtils.isNotBlank(agentNewDto.getAgentEmail())){
+            dbAgent.setAgentEmail(agentNewDto.getAgentEmail());
+        }
+        if (StringUtils.isNotBlank(agentNewDto.getAgentIdcardImg())){
+            dbAgent.setAgentIdcardImg(dbAgent.getAgentIdcardImg());
+        }
+        if (StringUtils.isNotBlank(agentNewDto.getAgentSchool())){
+            dbAgent.setAgentSchool(agentNewDto.getAgentSchool());
+        }
+        agentRepository.saveAndFlush(dbAgent);
+        redisTemplate.opsForHash().put(DrivingConstant.Redis.LOGIN_AGENTS,
+                DrivingConstant.Redis.AGENT_TOKEN+token,dbAgent);
+        AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
+        BeanUtils.copyProperties(dbAgent,agentBaseInfoVo);
+        return agentBaseInfoVo;
+    }
+
+    @Override
+    public Agent getAgentInfo() {
+        Agent agent = SecurityContextHolder.getAgent();
+        ParamValidatorUtil.validateContextHolderAgent(agent);
+        return agent;
     }
 
 

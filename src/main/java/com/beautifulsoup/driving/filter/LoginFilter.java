@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -31,7 +32,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@WebFilter(value = {"/agent/add"},filterName = "loginFilter")
+@Order(value = 1)
+@WebFilter(value = {"/agent/add", "/agent/sendmail","/agent/update","/agent/get"},
+        filterName = "loginFilter")
 public class LoginFilter implements Filter {
 
 

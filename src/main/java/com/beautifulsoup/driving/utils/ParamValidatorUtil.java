@@ -1,6 +1,7 @@
 package com.beautifulsoup.driving.utils;
 
 import com.beautifulsoup.driving.exception.ParamException;
+import com.beautifulsoup.driving.pojo.Agent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 
@@ -13,6 +14,11 @@ public class ParamValidatorUtil {
                 log.error(errorMsg);
                 throw new ParamException(error.getDefaultMessage());
             });
+        }
+    }
+    public static void validateContextHolderAgent(Agent agent){
+        if (agent == null) {
+            throw new ParamException("当前用户信息获取失败");
         }
     }
 }

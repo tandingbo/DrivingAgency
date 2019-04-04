@@ -20,5 +20,4 @@ public class AgentBaseInfoVo {
     private String agentSchool;
     private Integer agentAchieve;//总业绩
     private Integer status;//状态。1表示正常，0表示冻结
-    private Role role;
 }
