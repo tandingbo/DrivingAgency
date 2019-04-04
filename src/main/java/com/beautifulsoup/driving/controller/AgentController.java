@@ -5,6 +5,7 @@ import com.beautifulsoup.driving.dto.AgentDto;
 import com.beautifulsoup.driving.service.AgentService;
 import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
 import io.swagger.annotations.Api;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -50,8 +51,8 @@ public class AgentController {
     @ResponseBody
     public ResponseResult<AgentBaseInfoVo> passwordReset(@RequestHeader(value = "token",required = true)String token
     ,@RequestParam("username")String username,@RequestParam("newPassword")String newPassword,@RequestParam("password")String password
-    ,@RequestParam("email")String email){
-        AgentBaseInfoVo baseInfoVo = agentService.resetPassword(token,username,newPassword,password,email);
+    ,@RequestParam("code")String validateCode){
+        AgentBaseInfoVo baseInfoVo = agentService.resetPassword(token,username,newPassword,password,validateCode);
         if (baseInfoVo != null) {
             return ResponseResult.createBySuccess("密码重置成功",baseInfoVo);
         }
@@ -66,6 +67,17 @@ public class AgentController {
             return ResponseResult.createBySuccess("添加代理成功",agentBaseInfoVo);
         }
         return ResponseResult.createByError("代理添加失败");
+    }
+
+    @PostMapping(value = "/sendmail",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<String> sendEmail(@RequestParam("username") String username,
+                                            @RequestParam("email") String email){
+        String result = agentService.sendEmail(username, email);
+        if (StringUtils.isNotBlank(result)){
+            return ResponseResult.createBySuccess("邮件发送成功",result);
+        }
+        return ResponseResult.createByError("邮件发送失败");
     }
 
 }

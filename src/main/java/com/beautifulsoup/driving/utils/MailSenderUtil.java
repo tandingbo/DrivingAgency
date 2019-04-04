@@ -1,5 +1,6 @@
 package com.beautifulsoup.driving.utils;
 
+import com.beautifulsoup.driving.exception.ParamException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ public class MailSenderUtil {
             log.info("简单邮件已经发送。");
         } catch (Exception e) {
             log.error("发送简单邮件时发⽣异常！", e);
+            throw new ParamException("邮件发送失败");
         }
     }
 }

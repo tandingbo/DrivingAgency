@@ -114,6 +114,7 @@ public class LoginFilter implements Filter {
                 //旧Token加入黑名单,解决并发下的问题
                 stringRedisTemplate.opsForValue().set(DrivingConstant.Redis.TOKEN_BLACKLIST + token,newToken);
                 stringRedisTemplate.expire(DrivingConstant.Redis.TOKEN_BLACKLIST + token,30,TimeUnit.SECONDS);
+
                 redisTemplate.opsForHash().delete(DrivingConstant.Redis.LOGIN_AGENTS,
                         DrivingConstant.Redis.AGENT_TOKEN+token);
                 //继续当前请求,状态仍然需要维护

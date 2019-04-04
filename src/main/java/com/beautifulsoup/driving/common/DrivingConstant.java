@@ -4,6 +4,8 @@ public class DrivingConstant {
 
     public static final Long TOKEN_EXPIRE=7200000L;//token有效期2小时
     public static final Long REFRESH_TOKEN_EXPIRE=604800L;//refresh token有效期1周
+    public static final String EMAIL_VALIDATE_CODE_PREFIX="email_validate_code_prefix:";
+
 
     public interface File{
         String UPLOAD_EMPTY_ERROR="上传文件不能为空";

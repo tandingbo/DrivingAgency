@@ -10,5 +10,6 @@ public interface AgentService {
     AgentBaseInfoVo login(String username, String password, HttpServletResponse response);
     AgentBaseInfoVo addNewAgent(AgentDto agentDto, BindingResult result);
     AgentBaseInfoVo logout(String token);
-    AgentBaseInfoVo resetPassword(String token, String username, String newPassword, String password, String email);
+    AgentBaseInfoVo resetPassword(String token, String username, String newPassword, String password,String validateCode);
+    String sendEmail(String username,String email);
 }

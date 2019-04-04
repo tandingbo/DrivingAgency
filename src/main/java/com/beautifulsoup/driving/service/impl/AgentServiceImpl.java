@@ -5,15 +5,18 @@ import com.beautifulsoup.driving.common.SecurityContextHolder;
 import com.beautifulsoup.driving.dto.AgentDto;
 import com.beautifulsoup.driving.dto.UserTokenDto;
 import com.beautifulsoup.driving.exception.AuthenticationException;
+import com.beautifulsoup.driving.exception.ParamException;
 import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.repository.AgentRepository;
 import com.beautifulsoup.driving.service.AgentService;
 import com.beautifulsoup.driving.utils.*;
 import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,9 @@ import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static com.beautifulsoup.driving.common.DrivingConstant.EMAIL_VALIDATE_CODE_PREFIX;
 
 @Slf4j
 @Service
@@ -42,6 +48,9 @@ public class AgentServiceImpl implements AgentService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private MailSenderUtil mailSenderUtil;
 
     @Autowired
     private RedisTemplate<String, Serializable> redisTemplate;
@@ -113,20 +122,61 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
-    public AgentBaseInfoVo resetPassword(String token,String username, String newPassword, String password, String email) {
+    public AgentBaseInfoVo resetPassword(String token,String username, String newPassword, String password,String validateCode) {
         Preconditions.checkArgument(StringUtils.isNotBlank(token),"token不能为空");
         try {
             Claims claims = TokenUtil.parseJWT(token);
-
-            stringRedisTemplate.opsForHash().put(DrivingConstant.Redis.TOKEN_INVALID, token, DateTimeUtil.dateToMillis(new Date()));
             UserTokenDto userTokenDto= JsonSerializerUtil.string2Obj(claims.getSubject(),UserTokenDto.class);
+            if (!StringUtils.equals(userTokenDto.getAgentName(),username)){
+                throw new ParamException("账户和token不一致,密码重置失败");
+            }
+            Agent dbAgent = agentRepository.findAgentByAgentName(username);
+            String encodePassword = MD5Util.MD5Encode(password);
+            if (!StringUtils.equals(encodePassword,dbAgent.getAgentPassword())){
+                throw new ParamException("原密码输入错误");
+            }
+            if (StringUtils.isBlank(newPassword)||newPassword.length()>50){
+                throw new ParamException("修改的密码长度不合适");
+            }
+
+            boolean validate = stringRedisTemplate.hasKey(EMAIL_VALIDATE_CODE_PREFIX + username).booleanValue();
+            if (!validate){
+                throw new ParamException("邮箱验证码已经失效");
+            }
+            String codeRaw=stringRedisTemplate.opsForValue().get(EMAIL_VALIDATE_CODE_PREFIX+username);
+            if (!StringUtils.equals(codeRaw,validateCode)){
+                throw new ParamException("邮箱验证码不正确");
+            }
+
+            String newEncodedPassword=MD5Util.MD5Encode(newPassword);
+            dbAgent.setAgentPassword(newEncodedPassword);
+            agentRepository.saveAndFlush(dbAgent);
+
             AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
             BeanUtils.copyProperties(userTokenDto,agentBaseInfoVo);
+            stringRedisTemplate.opsForHash().put(DrivingConstant.Redis.TOKEN_INVALID, token, DateTimeUtil.dateToMillis(new Date()));
             return agentBaseInfoVo;
         }catch (Exception e){
             log.error("密码重置失败:{}",e);
+            throw new ParamException("密码重置失败");
         }
-        return null;
+    }
+
+    @Override
+    public String sendEmail(String username, String email) {
+        Agent dbAgent = agentRepository.findAgentByAgentName(username);
+        if (!StringUtils.equals(email,dbAgent.getAgentEmail())){
+                throw new ParamException("邮箱地址不正确,请输入您注册时的邮箱地址修改密码");
+        }
+        ImmutableList<Integer> immutableList = ImmutableList.of(RandomUtils.nextInt(1,10)
+                ,RandomUtils.nextInt(1,10),RandomUtils.nextInt(1,10),RandomUtils.nextInt(1,10),RandomUtils.nextInt(1,10),
+                RandomUtils.nextInt(1,10));
+        String validateCode = immutableList.parallelStream().map(String::valueOf).collect(Collectors.joining(""));
+        stringRedisTemplate.opsForValue().set(EMAIL_VALIDATE_CODE_PREFIX+username,validateCode);
+        stringRedisTemplate.expire(EMAIL_VALIDATE_CODE_PREFIX+username,10, TimeUnit.MINUTES);
+        mailSenderUtil.sendSimpleMail(email,"【驾校代理小程序验证码】",
+                "亲，感谢您选择本驾校代理软件。您的本次验证码为:"+validateCode+" 。"+"此验证码有效期10分钟,请您尽快处理。");
+        return "邮件发送成功";
     }
 
 
