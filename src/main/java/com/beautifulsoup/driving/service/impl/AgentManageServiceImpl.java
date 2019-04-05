@@ -25,6 +25,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -84,10 +85,13 @@ public class AgentManageServiceImpl implements AgentManageService {
                 stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_TOTAL,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),1);
 
                 stringRedisTemplate.opsForZSet().add(DrivingConstant.Redis.ACHIEVEMENT_TOTAL_ORDER,
-                        DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),Double.parseDouble(Strings.nullToEmpty((String) stringRedisTemplate.opsForHash()
-                                .get(DrivingConstant.Redis.ACHIEVEMENT_TOTAL,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName()))));
+                        DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),
+                        Double.parseDouble(MoreObjects.firstNonNull(Strings.emptyToNull((String) stringRedisTemplate.opsForHash()
+                                .get(DrivingConstant.Redis.ACHIEVEMENT_TOTAL,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName())),"0")));
                 stringRedisTemplate.opsForZSet().add(DrivingConstant.Redis.ACHIEVEMENT_DAILY_ORDER,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName()
-                ,Double.parseDouble(Strings.nullToEmpty((String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName()))));
+                ,Double.parseDouble(MoreObjects.firstNonNull(Strings.emptyToNull((String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY,
+                                DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName())),"0")));
+
                 Role role=roleRepository.findById(3).get();
                 agent.setRole(role);
                 agentRepository.save(authentication);
@@ -136,6 +140,9 @@ public class AgentManageServiceImpl implements AgentManageService {
         findChildrenAgents(agents,agent.getId());
         List<AgentVo> lists= Lists.newArrayList();
 
+        List<Agent> collect = agents.stream().filter(agent2 -> !agent2.getParentId().equals(agent.getId())).collect(Collectors.toList());
+
+        agents.remove(collect.get(0));
         agents.stream().sorted(Comparator.comparing(Agent::getAgentAchieve).reversed()).forEach(agent1->{
             AgentVo agentVo=new AgentVo();
             RoleVo roleVo=new RoleVo();
@@ -143,8 +150,17 @@ public class AgentManageServiceImpl implements AgentManageService {
             BeanUtils.copyProperties(agent1.getRole(),roleVo);
             String  totalAchieve = (String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_TOTAL, DrivingConstant.Redis.ACHIEVEMENT_AGENT + agent1.getAgentName());
             String  dailyAchieve = (String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY, DrivingConstant.Redis.ACHIEVEMENT_AGENT + agent1.getAgentName());
-            agentVo.setDailyAchieve(Integer.parseInt(dailyAchieve));
-            agentVo.setAgentAchieve(Integer.parseInt(totalAchieve));
+            if (StringUtils.isBlank(dailyAchieve)){
+                agentVo.setDailyAchieve(0);
+            }else{
+                agentVo.setDailyAchieve(Integer.parseInt(dailyAchieve));
+            }
+            if (StringUtils.isBlank(totalAchieve)){
+                agentVo.setAgentAchieve(0);
+            }else{
+                agentVo.setAgentAchieve(Integer.parseInt(totalAchieve));
+            }
+
             agentVo.setRoleVo(roleVo);
             lists.add(agentVo);
         });

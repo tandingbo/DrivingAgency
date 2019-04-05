@@ -105,6 +105,9 @@ public class DrivingApplicationTests {
                 DrivingConstant.Redis.ACHIEVEMENT_AGENT+"aaa",1);
         log.info("aaa:"+stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY,
                 DrivingConstant.Redis.ACHIEVEMENT_AGENT+"aaa"));
+        stringRedisTemplate.opsForZSet().add(DrivingConstant.Redis.ACHIEVEMENT_DAILY_ORDER,DrivingConstant.Redis.ACHIEVEMENT_AGENT
+        +"aaa", Double.parseDouble((String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY,
+                DrivingConstant.Redis.ACHIEVEMENT_AGENT+"aaa")) );
     }
 
 }

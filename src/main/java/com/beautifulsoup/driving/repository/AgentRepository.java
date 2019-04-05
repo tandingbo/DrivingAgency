@@ -13,5 +13,6 @@ public interface AgentRepository extends JpaRepository<Agent,Integer> {
     @EntityGraph(value = "agent.all")
     List<Agent> findAll();
     Agent findAgentByAgentName(String agentName);
+    Agent findByParentId(Integer parentId);
     List<Agent> findAllByParentId(Integer parentId);
 }
