@@ -149,7 +149,7 @@ public class AgentManageServiceImpl implements AgentManageService {
 
         if (agent.getRole().getType().equals(RoleCode.ROLE_ADMIN.getType())){
             List<Agent> collect = agents.stream().filter(agent2 -> !agent2.getParentId().equals(1)).collect(Collectors.toList());
-            collect.stream().forEach(col->{
+            collect.forEach(col->{
                 agents.remove(col);
             });
         }else{

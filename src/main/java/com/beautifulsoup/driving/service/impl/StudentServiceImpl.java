@@ -17,11 +17,19 @@ import com.beautifulsoup.driving.utils.ParamValidatorUtil;
 import com.beautifulsoup.driving.vo.StudentVo;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+
+import javax.management.relation.RoleStatus;
+import java.util.List;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -54,7 +62,12 @@ public class StudentServiceImpl implements StudentService {
         }
 
         student.setOperator(authentication.getAgentName());
-        student.setStatus(StudentStatus.AVAILABLE.getStatus());
+        if (!authentication.getRole().getType().equals(RoleCode.ROLE_ADMIN.getType())){
+            student.setStatus(StudentStatus.UNAVAILABLE.getStatus());
+        }else{
+            student.setStatus(StudentStatus.AVAILABLE.getStatus());
+        }
+
         studentRepository.save(student);
         stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_DAILY,
                 DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),1);
@@ -88,5 +101,60 @@ public class StudentServiceImpl implements StudentService {
         StudentVo studentVo=new StudentVo();
         BeanUtils.copyProperties(student,studentVo);
         return studentVo;
+    }
+
+    @Override
+    public List<StudentVo> getAllStudentsByPage(Integer pageNum, Integer pageSize) {
+        Agent agent=SecurityContextHolder.getAgent();
+        Pageable pageable= PageRequest.of(pageNum-1,pageSize, Sort.by(Sort.Order.desc("studentPrice")));
+        Page<Student> all = studentRepository.findAllByOperator(agent.getAgentName(),pageable);
+        List<StudentVo> studentVos=Lists.newArrayList();
+        all.get().forEach(student -> {
+            StudentVo studentVo=new StudentVo();
+            BeanUtils.copyProperties(student,studentVo);
+            studentVos.add(studentVo);
+        });
+        return studentVos;
+    }
+
+    @Override
+    public List<StudentVo> getAllStudents() {
+        Agent agent = SecurityContextHolder.getAgent();
+        List<Student> all = studentRepository.findAllByOperator(agent.getAgentName(),Sort.by(Sort.Order.desc("studentPrice")));
+        List<StudentVo> studentVos= Lists.newArrayList();
+
+        all.forEach(student -> {
+            StudentVo studentVo=new StudentVo();
+            BeanUtils.copyProperties(student,studentVo);
+            studentVos.add(studentVo);
+        });
+        return studentVos;
+    }
+
+    @Override
+    public StudentVo examineExistsStudent(String studentname) {
+        Student byStudentName = studentRepository.findByStudentName(studentname);
+        if (byStudentName != null) {
+            if (byStudentName.getStatus().equals(StudentStatus.UNAVAILABLE.getStatus())){
+                byStudentName.setStatus(StudentStatus.AVAILABLE.getStatus());
+                studentRepository.save(byStudentName);
+            }
+            StudentVo studentVo=new StudentVo();
+            BeanUtils.copyProperties(byStudentName,studentVo);
+            return studentVo;
+        }
+        return null;
+    }
+
+    @Override
+    public List<StudentVo> getAllUnExaminedStudents() {
+        List<StudentVo> studentVos=Lists.newArrayList();
+        List<Student> list = studentRepository.findAllByStatus(StudentStatus.UNAVAILABLE.getStatus());
+        for (Student student : list) {
+            StudentVo studentVo=new StudentVo();
+            BeanUtils.copyProperties(student,studentVo);
+            studentVos.add(studentVo);
+        }
+        return studentVos;
     }
 }

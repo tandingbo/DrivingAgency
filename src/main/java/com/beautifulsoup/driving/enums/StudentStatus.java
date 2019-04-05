@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum StudentStatus {
-    AVAILABLE(1,"学员信息可用"),
-    UNAVAILABLE(0,"学员信息不可用")
+    AVAILABLE(1,"学员信息已审核"),
+    UNAVAILABLE(0,"学员信息未审核")
     ;
     private final Integer status;
 
