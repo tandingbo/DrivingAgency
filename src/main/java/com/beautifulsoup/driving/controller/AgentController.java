@@ -54,7 +54,7 @@ public class AgentController {
     @PostMapping(value = "/password/reset",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<AgentBaseInfoVo> passwordReset(@RequestHeader(value = "token",required = true)String token
-    ,@RequestParam("username")String username,@RequestParam("newPassword")String newPassword,@RequestParam("password")String password
+    ,@RequestParam("username")String username,@RequestParam("newPassword")String newPassword, @RequestParam("password")String password
     ,@RequestParam("code")String validateCode){
         AgentBaseInfoVo baseInfoVo = agentService.resetPassword(token,username,newPassword,password,validateCode);
         if (baseInfoVo != null) {

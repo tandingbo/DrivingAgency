@@ -18,6 +18,7 @@ public class AgentBaseInfoVo {
     private String agentPhone;
     private String agentEmail;
     private String agentSchool;
+    private Integer dailyAchieve;
     private Integer agentAchieve;//总业绩
     private Integer status;//状态。1表示正常，0表示冻结
 }

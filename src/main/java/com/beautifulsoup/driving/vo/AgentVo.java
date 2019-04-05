@@ -19,6 +19,7 @@ public class AgentVo {
     private String agentIdcard;
     private String agentIdcardImg;
     private String agentSchool;
+    private Integer dailyAchieve;
     private Integer agentAchieve;//总业绩
     private Integer status;//状态。1表示正常，0表示冻结
     private RoleVo roleVo;

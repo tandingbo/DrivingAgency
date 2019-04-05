@@ -23,8 +23,11 @@ public class StudentVo {
     private String studentId;
 
     private String studentName;
+
     private String studentPhone;
+
     private String studentImg;
+
     private String studentSchool;
 
     private BigDecimal studentPrice;

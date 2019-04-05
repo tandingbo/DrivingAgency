@@ -73,7 +73,7 @@ public class AgentManageServiceImpl implements AgentManageService {
             if (authentication.getParentId().equals(RoleCode.ROLE_ADMIN.getType())){
                 agent.setStatus(AgentStatus.EXAMINED.getCode());
                 agent.setParentId(RoleCode.ROLE_FIRST_TIER_AGENT.getType());
-                
+
                 Role role = roleRepository.findById(2).get();
                 agent.setRole(role);
             }else{
@@ -141,6 +141,10 @@ public class AgentManageServiceImpl implements AgentManageService {
             RoleVo roleVo=new RoleVo();
             BeanUtils.copyProperties(agent1,agentVo);
             BeanUtils.copyProperties(agent1.getRole(),roleVo);
+            String  totalAchieve = (String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_TOTAL, DrivingConstant.Redis.ACHIEVEMENT_AGENT + agent1.getAgentName());
+            String  dailyAchieve = (String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY, DrivingConstant.Redis.ACHIEVEMENT_AGENT + agent1.getAgentName());
+            agentVo.setDailyAchieve(Integer.parseInt(dailyAchieve));
+            agentVo.setAgentAchieve(Integer.parseInt(totalAchieve));
             agentVo.setRoleVo(roleVo);
             lists.add(agentVo);
         });
