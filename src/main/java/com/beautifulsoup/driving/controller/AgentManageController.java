@@ -38,14 +38,36 @@ public class AgentManageController {
         return ResponseResult.createByError("代理添加失败");
     }
 
-    @GetMapping(value = "/agent/listall")
+    @GetMapping(value = "/agent/listall",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<List<AgentVo>> listAllAgents(){
         List<AgentVo> agents=agentManageService.listAllAgents();
         return ResponseResult.createBySuccess("查看代理成功",agents);
     }
 
-    @GetMapping(value = "/agent/unexamine/listall")
+    @GetMapping(value = "/agent/listbydaily",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<List<AgentBaseInfoVo>> listAllAgentsByDailyAchievements(){
+        List<AgentBaseInfoVo> agents=agentManageService.listAllAgentsByDailyAchievements();
+        return ResponseResult.createBySuccess("代理日业绩获取成功",agents);
+    }
+
+    @GetMapping(value = "/agent/listbytotal",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<List<AgentBaseInfoVo>> listAllAgentsByTotalAchievements(){
+        List<AgentBaseInfoVo> agents=agentManageService.listAllAgentsByTotalAchievements();
+        return ResponseResult.createBySuccess("代理总业绩获取成功",agents);
+    }
+
+    //    agent/listbyname
+    @GetMapping(value = "/agent/listbyname",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<List<AgentBaseInfoVo>> listChildrenAgentsByName(@RequestParam("username")String username){
+        List<AgentBaseInfoVo> agents=agentManageService.listChildrenAgentsByName(username);
+        return ResponseResult.createBySuccess("子代理总业绩获取成功",agents);
+    }
+
+    @GetMapping(value = "/agent/unexamine/listall",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<List<AgentVo>> listAllUnExamineAgents(){
         List<AgentVo> agents=agentManageService.listAllUnExamineAgents();
@@ -75,12 +97,14 @@ public class AgentManageController {
         return ResponseResult.createByError("获取最新公告失败");
     }
 
-    @GetMapping(value = "/announcement/getlatest")
+    @GetMapping(value = "/announcement/getlatest",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<AnnouncementVo> getLatestAnnouncement(){
         AnnouncementVo announcementVo=agentManageService.getLatestAnnouncement();
         return ResponseResult.createBySuccess("最新公告获取成功",announcementVo);
     }
+
+
 
     @GetMapping(value = "/derived/excel")
     @ResponseBody

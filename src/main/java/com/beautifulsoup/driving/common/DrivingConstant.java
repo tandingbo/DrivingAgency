@@ -32,5 +32,6 @@ public class DrivingConstant {
         String ACHIEVEMENT_TOTAL="achievement_total:";
         String ACHIEVEMENT_DAILY="achievement_daily:";
         String ACHIEVEMENT_AGENT="achievement_agent:";
+        String ACHIEVEMENT_AGENTS="achievement_agents:";
     }
 }

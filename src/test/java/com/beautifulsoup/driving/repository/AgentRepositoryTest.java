@@ -38,7 +38,7 @@ public class AgentRepositoryTest {
 //                .parentId(-1)//1级代理
                 .agentIdcard("372330000007777663220")
                 .agentSchool("山东师范大学")
-                .agentIdcardImg("http://39.106.62.161:8888/driving/M00/00/00/111")
+                .agentIdcardImg("http://127.0.0.1:8888/driving/M00/00/00/111")
                 .build();
         Agent agent=new Agent();
         BeanUtils.copyProperties(agentDto,agent);

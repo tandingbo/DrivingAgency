@@ -1,11 +1,14 @@
 package com.beautifulsoup.driving.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 
+//用于管理信息展示
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,4 +26,5 @@ public class AgentVo {
     private Integer agentAchieve;//总业绩
     private Integer status;//状态。1表示正常，0表示冻结
     private RoleVo roleVo;
+
 }

@@ -7,17 +7,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
+//用于首页展示
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AgentBaseInfoVo {
+public class AgentBaseInfoVo implements Serializable {
+    private static final long serialVersionUID = -2024608984564029929L;
     private Integer id;
     private String agentName;
-    private String agentPhone;
-    private String agentEmail;
-    private String agentSchool;
     private Integer dailyAchieve;
     private Integer agentAchieve;//总业绩
     private Integer status;//状态。1表示正常，0表示冻结

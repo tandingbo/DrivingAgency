@@ -3,8 +3,10 @@ package com.beautifulsoup.driving.service.impl;
 import com.beautifulsoup.driving.common.DrivingConstant;
 import com.beautifulsoup.driving.common.SecurityContextHolder;
 import com.beautifulsoup.driving.dto.StudentDto;
+import com.beautifulsoup.driving.enums.AgentStatus;
 import com.beautifulsoup.driving.enums.RoleCode;
 import com.beautifulsoup.driving.enums.StudentStatus;
+import com.beautifulsoup.driving.exception.AuthenticationException;
 import com.beautifulsoup.driving.exception.ParamException;
 import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.pojo.Student;
@@ -46,21 +48,29 @@ public class StudentServiceImpl implements StudentService {
         Student student=new Student();
         BeanUtils.copyProperties(studentDto,student);
         Agent authentication = SecurityContextHolder.getAgent();
+
+        if (authentication.getRole().getType().equals(AgentStatus.UNEXAMINED.getCode())){
+            throw new AuthenticationException("当前账户审核未通过,不能添加学员");
+        }
+
         student.setOperator(authentication.getAgentName());
         student.setStatus(StudentStatus.AVAILABLE.getStatus());
         studentRepository.save(student);
-        stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_DAILY,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),1);
-        stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_TOTAL,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),1);
+        stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_DAILY,
+                DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),1);
+        stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_TOTAL,
+                DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),1);
 
         stringRedisTemplate.opsForZSet().add(DrivingConstant.Redis.ACHIEVEMENT_TOTAL_ORDER,
-                DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),Double.parseDouble(Strings.nullToEmpty((String) stringRedisTemplate.opsForHash()
+                DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),
+                Double.parseDouble(Strings.nullToEmpty((String) stringRedisTemplate.opsForHash()
                         .get(DrivingConstant.Redis.ACHIEVEMENT_TOTAL,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName()))));
         stringRedisTemplate.opsForZSet().add(DrivingConstant.Redis.ACHIEVEMENT_DAILY_ORDER,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName()
                 ,Double.parseDouble(Strings.nullToEmpty((String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName()))));
 
 
         if (authentication.getRole().getType().equals(RoleCode.ROLE_SECOND_TIER_AGENT.getType())){
-            Agent parent = agentRepository.findByParentId(authentication.getParentId());
+            Agent parent = agentRepository.findById(authentication.getParentId()).get();
             stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_DAILY,DrivingConstant.Redis.ACHIEVEMENT_AGENT+parent.getAgentName(),1);
             stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_TOTAL,DrivingConstant.Redis.ACHIEVEMENT_AGENT+parent.getAgentName(),1);
 

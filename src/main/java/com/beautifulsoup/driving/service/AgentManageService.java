@@ -16,4 +16,7 @@ public interface AgentManageService {
     List<AgentVo> listAllAgents();
     List<AgentVo> listAllUnExamineAgents();
     AnnouncementVo getLatestAnnouncement();
+    List<AgentBaseInfoVo> listAllAgentsByDailyAchievements();
+    List<AgentBaseInfoVo> listAllAgentsByTotalAchievements();
+    List<AgentBaseInfoVo> listChildrenAgentsByName(String username);
 }
