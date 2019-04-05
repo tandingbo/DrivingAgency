@@ -1,6 +1,7 @@
 package com.beautifulsoup.driving.dto;
 
 import com.beautifulsoup.driving.common.DrivingConstant;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
@@ -14,8 +15,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentDto {
-    @Length(max=100,message = "学号长度不能超过100字符")
-    @NotBlank(message = "学生学号不能为空")
+    @Length(max=100,message = "身份证号长度不能超过100字符")
+    @JsonProperty(value = "idcard")
+    @NotBlank(message = "身份证号不能为空")
     private String studentId;
 
     @Length(max=100,message = "学生名称长度不能超过100字符")
@@ -36,10 +38,5 @@ public class StudentDto {
 
     private BigDecimal studentPrice;
 
-    @Length(max=100,message = "操作者名长度必须在100字符之内")
-    @NotBlank(message = "操作者名不能为空")
-    private String operator;
-
-    private Integer status;
 
 }

@@ -73,6 +73,7 @@ public class AgentManageServiceImpl implements AgentManageService {
             if (authentication.getParentId().equals(RoleCode.ROLE_ADMIN.getType())){
                 agent.setStatus(AgentStatus.EXAMINED.getCode());
                 agent.setParentId(RoleCode.ROLE_FIRST_TIER_AGENT.getType());
+                
                 Role role = roleRepository.findById(2).get();
                 agent.setRole(role);
             }else{
