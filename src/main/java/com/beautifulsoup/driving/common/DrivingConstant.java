@@ -27,9 +27,10 @@ public class DrivingConstant {
         String TOKEN_REFRESH="token_refresh:";
         String TOKEN_INVALID="token_invalid:";
 
+        String ACHIEVEMENT_TOTAL_ORDER="achievement_total_order:";
+        String ACHIEVEMENT_DAILY_ORDER="achievement_daily_order:";
         String ACHIEVEMENT_TOTAL="achievement_total:";
         String ACHIEVEMENT_DAILY="achievement_daily:";
         String ACHIEVEMENT_AGENT="achievement_agent:";
-
     }
 }

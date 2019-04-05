@@ -1,5 +1,6 @@
 package com.beautifulsoup.driving;
 
+import com.beautifulsoup.driving.common.DrivingConstant;
 import com.beautifulsoup.driving.dto.AgentDto;
 import com.beautifulsoup.driving.dto.UserTokenDto;
 import com.beautifulsoup.driving.pojo.Agent;
@@ -100,6 +101,10 @@ public class DrivingApplicationTests {
 //        log.info(encode);
 //        String token1="eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJhZ2VudE5hbWVcIjpcIkFkbWluXCIsXCJwYXJlbnRJZFwiOi0xLFwic3RhdHVzXCI6MSxcImFnZW50U2Nob29sXCI6XCLlsbHkuJzluIjojIPlpKflraZcIn0iLCJuYW1lIjoiQmVhdXRpZnVsU291cCIsImlzcyI6IkJlYXV0aWZ1bFNvdXAiLCJhZG1pbiI6dHJ1ZSwiZXhwIjoxNTU0MzU1OTcxLCJpYXQiOjE1NTQzNDg3NzEsImp0aSI6Imp3dCJ9.piIeUfJkyy0sq_iFe6qlTn5OU3Kj7S55imyyj4t1El2oNvHE2j0j9EbF2sf9iU24JtFYpmF0Klf0MWTgt8QV7Q";
 //        String token2="eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ7XCJhZ2VudE5hbWVcIjpcIkFkbWluXCIsXCJwYXJlbnRJZFwiOi0xLFwic3RhdHVzXCI6MSxcImFnZW50U2Nob29sXCI6XCLlsbHkuJzluIjojIPlpKflraZcIn0iLCJuYW1lIjoiQmVhdXRpZnVsU291cCIsImlzcyI6IkJlYXV0aWZ1bFNvdXAiLCJhZG1pbiI6dHJ1ZSwiZXhwIjoxNTU0MzU2MDY3LCJpYXQiOjE1NTQzNDg4NjcsImp0aSI6Imp3dCJ9.XLM71GlcPltBjBiBgYQixL95Bp-q7Q-l-60-y6i2zQFVABIjfZU9ZGRMQh3Gao262D_KPGFyKMnHQBALumD1WQ";
+        stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_DAILY,
+                DrivingConstant.Redis.ACHIEVEMENT_AGENT+"aaa",1);
+        log.info("aaa:"+stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY,
+                DrivingConstant.Redis.ACHIEVEMENT_AGENT+"aaa"));
     }
 
 }
