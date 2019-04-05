@@ -38,6 +38,7 @@ public class AclControlFilter implements Filter {
             ResponseUtil.warningAccessDenied(servletResponse,"用户信息获取失败");
             return;
         }
+        log.info(servletRequest.getServletPath());
         if (!hasUrlAcl(servletRequest.getServletPath())){
             ResponseUtil.warningAccessDenied(servletResponse,"对不起,您没有权限访问");
             return;
@@ -53,7 +54,7 @@ public class AclControlFilter implements Filter {
 
     private boolean isSuperAdmin(){
         Agent agent=SecurityContextHolder.getAgent();
-        if (agent.getRole().getType()== RoleCode.ROLE_ADMIN.getType()){
+        if (agent.getRole().getType().equals(RoleCode.ROLE_ADMIN.getType())){
             return true;
         }
         return false;

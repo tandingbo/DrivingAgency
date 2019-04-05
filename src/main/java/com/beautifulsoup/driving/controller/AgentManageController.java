@@ -2,10 +2,13 @@ package com.beautifulsoup.driving.controller;
 
 import com.beautifulsoup.driving.common.ResponseResult;
 import com.beautifulsoup.driving.dto.AgentDto;
+import com.beautifulsoup.driving.dto.AnnouncementDto;
 import com.beautifulsoup.driving.pojo.Agent;
+import com.beautifulsoup.driving.pojo.Announcement;
 import com.beautifulsoup.driving.service.AgentManageService;
 import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
 import com.beautifulsoup.driving.vo.AgentVo;
+import com.beautifulsoup.driving.vo.AnnouncementVo;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -60,10 +63,23 @@ public class AgentManageController {
     }
 
 
-    @PostMapping(value = "/publish/announcement",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/announcement/publish",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public ResponseResult publishAnnouncement(){
-        return null;
+    public ResponseResult<AnnouncementVo> publishAnnouncement(@Valid @RequestBody AnnouncementDto announcementDto,
+                                                              BindingResult result){
+        AnnouncementVo announcementVo = agentManageService.publishAnnouncement(announcementDto, result);
+        if (announcementVo != null) {
+            return ResponseResult.createBySuccess("获取最新公告成功",announcementVo);
+        }
+
+        return ResponseResult.createByError("获取最新公告失败");
+    }
+
+    @GetMapping(value = "/announcement/getlatest")
+    @ResponseBody
+    public ResponseResult<AnnouncementVo> getLatestAnnouncement(){
+        AnnouncementVo announcementVo=agentManageService.getLatestAnnouncement();
+        return ResponseResult.createBySuccess("最新公告获取成功",announcementVo);
     }
 
     @GetMapping(value = "/derived/excel")
