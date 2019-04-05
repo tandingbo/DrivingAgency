@@ -12,6 +12,7 @@ import com.beautifulsoup.driving.repository.AgentRepository;
 import com.beautifulsoup.driving.service.AgentService;
 import com.beautifulsoup.driving.utils.*;
 import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
+import com.beautifulsoup.driving.vo.AgentVo;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -142,7 +143,8 @@ public class AgentServiceImpl implements AgentService {
 
             AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
             BeanUtils.copyProperties(userTokenDto,agentBaseInfoVo);
-            stringRedisTemplate.opsForHash().put(DrivingConstant.Redis.TOKEN_INVALID, token, DateTimeUtil.dateToMillis(new Date()));
+            stringRedisTemplate.opsForHash().put(DrivingConstant.Redis.TOKEN_INVALID,
+                    token, DateTimeUtil.dateToMillis(new Date()));
             return agentBaseInfoVo;
         }catch (Exception e){
             log.error("密码重置失败:{}",e);
@@ -151,11 +153,10 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
-    public String sendEmail(String email) {
-        Agent dbAgent = SecurityContextHolder.getAgent();
-        ParamValidatorUtil.validateContextHolderAgent(dbAgent);
+    public String sendEmail(String username,String email) {
+        Agent dbAgent=agentRepository.findAgentByAgentName(username);
 
-        if (!StringUtils.equals(email,dbAgent.getAgentEmail())){
+        if (dbAgent==null||!StringUtils.equals(email,dbAgent.getAgentEmail())){
                 throw new ParamException("邮箱地址不正确,请输入您注册时的邮箱地址修改密码");
         }
         ImmutableList<Integer> immutableList = ImmutableList.of(RandomUtils.nextInt(1,10)
@@ -165,7 +166,7 @@ public class AgentServiceImpl implements AgentService {
         stringRedisTemplate.opsForValue().set(EMAIL_VALIDATE_CODE_PREFIX+dbAgent.getAgentName(),validateCode);
         stringRedisTemplate.expire(EMAIL_VALIDATE_CODE_PREFIX+dbAgent.getAgentName(),10, TimeUnit.MINUTES);
         mailSenderUtil.sendSimpleMail(email,"【驾校代理小程序验证码】",
-                "亲，感谢您选择本驾校代理软件。您的本次验证码为:"+validateCode+" 。"+"此验证码有效期10分钟,请您尽快处理。");
+                "亲，感谢您选择本驾校代理软件。您的本次验证码为: "+validateCode+"。"+"此验证码有效期10分钟,请您尽快处理。");
         return "邮件发送成功";
     }
 
@@ -200,6 +201,23 @@ public class AgentServiceImpl implements AgentService {
         Agent agent = SecurityContextHolder.getAgent();
         ParamValidatorUtil.validateContextHolderAgent(agent);
         return agent;
+    }
+
+    @Override
+    public AgentVo retrievePassword(String username,String password,String validateCode) {
+        String codeRaw=stringRedisTemplate.opsForValue().get(EMAIL_VALIDATE_CODE_PREFIX+username);
+        if (!StringUtils.equals(codeRaw,validateCode)){
+            throw new ParamException("邮箱验证码不正确");
+        }
+        Agent agent=agentRepository.findAgentByAgentName(username);
+        if (agent!=null){
+            agent.setAgentPassword(MD5Util.MD5Encode(password));
+            agentRepository.saveAndFlush(agent);
+            AgentVo agentVo=new AgentVo();
+            BeanUtils.copyProperties(agent,agentVo);
+            return agentVo;
+        }
+        return null;
     }
 
 

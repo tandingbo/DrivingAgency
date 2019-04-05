@@ -49,7 +49,7 @@ public class StudentServiceImpl implements StudentService {
         BeanUtils.copyProperties(studentDto,student);
         Agent authentication = SecurityContextHolder.getAgent();
 
-        if (authentication.getRole().getType().equals(AgentStatus.UNEXAMINED.getCode())){
+        if (authentication.getStatus().equals(AgentStatus.UNEXAMINED.getCode())){
             throw new AuthenticationException("当前账户审核未通过,不能添加学员");
         }
 

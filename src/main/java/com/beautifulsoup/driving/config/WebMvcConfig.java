@@ -36,7 +36,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public FilterRegistrationBean loginFilterRegistration() {
         FilterRegistrationBean registration = new FilterRegistrationBean();
         registration.setFilter(loginFilter());
-        registration.addUrlPatterns("/manage/*","/agent/add", "/agent/sendmail","/agent/update","/agent/get","/student/*");
+        registration.addUrlPatterns("/manage/*","/agent/add","/agent/update","/agent/get","/student/*");
         registration.setName("loginFilter");
         registration.setOrder(1);
         return registration;

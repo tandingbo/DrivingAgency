@@ -91,10 +91,10 @@ public class AgentManageController {
                                                               BindingResult result){
         AnnouncementVo announcementVo = agentManageService.publishAnnouncement(announcementDto, result);
         if (announcementVo != null) {
-            return ResponseResult.createBySuccess("获取最新公告成功",announcementVo);
+            return ResponseResult.createBySuccess("发布公告成功",announcementVo);
         }
 
-        return ResponseResult.createByError("获取最新公告失败");
+        return ResponseResult.createByError("发布公告失败");
     }
 
     @GetMapping(value = "/announcement/getlatest",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

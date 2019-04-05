@@ -136,7 +136,6 @@ public class AgentManageServiceImpl implements AgentManageService {
             BeanUtils.copyProperties(agent,agentBaseInfoVo);
             return agentBaseInfoVo;
         }
-
         return null;
     }
 
@@ -187,7 +186,18 @@ public class AgentManageServiceImpl implements AgentManageService {
 
     @Override
     public List<AgentVo> listAllUnExamineAgents() {
-        List<AgentVo> collect = listAllAgents().stream().filter(agentVo -> agentVo.getStatus() == 0).collect(Collectors.toList());
+        Agent agent = SecurityContextHolder.getAgent();
+        ParamValidatorUtil.validateContextHolderAgent(agent);
+        Set<Agent> agents= Sets.newConcurrentHashSet();
+        findChildrenAgents(agents,agent.getId());
+        List<AgentVo> lists= Lists.newArrayList();
+        agents.stream().sorted(Comparator.comparing(Agent::getAgentAchieve).reversed()).forEach(agent1->{
+            AgentVo agentVo=new AgentVo();
+            BeanUtils.copyProperties(agent1,agentVo);
+            lists.add(agentVo);
+        });
+        List<AgentVo> collect = lists.stream().
+                filter(agentVo -> agentVo.getStatus() == 0).collect(Collectors.toList());
         return collect;
     }
 
@@ -206,12 +216,13 @@ public class AgentManageServiceImpl implements AgentManageService {
     public List<AgentBaseInfoVo> listAllAgentsByDailyAchievements() {
         List<AgentVo> agentVos = listAllAgents();
         List<AgentBaseInfoVo> collect =Lists.newArrayList();
-        agentVos.stream().sorted(Comparator.comparing(AgentVo::getAgentAchieve).reversed())
+        agentVos.stream().sorted(Comparator.comparing(AgentVo::getDailyAchieve).reversed())
                 .forEach(agentVo -> {
                     AgentBaseInfoVo agentBaseInfoVo=new AgentBaseInfoVo();
                     BeanUtils.copyProperties(agentVo,agentBaseInfoVo);
                     collect.add(agentBaseInfoVo);
                 });
+//        agentVos.stream().
         return collect;
     }
 

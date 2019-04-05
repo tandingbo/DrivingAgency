@@ -29,7 +29,6 @@ public class StudentDto {
     private String studentPhone;
 
     @Length(max=1024,message = "学生照片地址长度不能超过1024字符")
-    @NotBlank(message = "学生照片地址不能为空")
     private String studentImg;
 
     @Length(max=100,message = "学校名称长度不能超过100字符")

@@ -38,7 +38,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQL5Dialect
     generate-ddl: false
   redis:
-    database: 1
+    database: 3
     host: 127.0.0.1
     port: 6379
     password:

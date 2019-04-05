@@ -6,6 +6,7 @@ import com.beautifulsoup.driving.dto.AgentNewDto;
 import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.service.AgentService;
 import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
+import com.beautifulsoup.driving.vo.AgentVo;
 import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +55,8 @@ public class AgentController {
     @PostMapping(value = "/password/reset",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<AgentBaseInfoVo> passwordReset(@RequestHeader(value = "token",required = true)String token
-    ,@RequestParam("username")String username,@RequestParam("newPassword")String newPassword, @RequestParam("password")String password
+    ,@RequestParam("username")String username,@RequestParam("newPassword")String newPassword,
+                                                         @RequestParam("password")String password
     ,@RequestParam("code")String validateCode){
         AgentBaseInfoVo baseInfoVo = agentService.resetPassword(token,username,newPassword,password,validateCode);
         if (baseInfoVo != null) {
@@ -65,8 +67,8 @@ public class AgentController {
 
     @PostMapping(value = "/sendmail",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public ResponseResult<Map<String,String>> sendEmail(@RequestParam("email") String email){
-        String result = agentService.sendEmail(email);
+    public ResponseResult<Map<String,String>> sendEmail(@RequestParam("username")String username,@RequestParam("email") String email){
+        String result = agentService.sendEmail(username,email);
         if (StringUtils.isNotBlank(result)){
             Map<String,String> res= Maps.newHashMap();
             res.put("data",result);
@@ -78,7 +80,8 @@ public class AgentController {
     @PutMapping(value = "/update",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseResult<AgentBaseInfoVo> updateAgentInfo(@Valid @RequestBody AgentNewDto agentNewDto,
-                                                           BindingResult result,@RequestHeader("token")String token){
+                                                           BindingResult result,
+                                                           @RequestHeader("token")String token){
 
         AgentBaseInfoVo agentBaseInfoVo = agentService.updateAgentInfo(agentNewDto, result,token);
 
@@ -99,5 +102,15 @@ public class AgentController {
         return ResponseResult.createByError("账户信息获取失败");
     }
 
-
+    @PostMapping(value = "/password/retrieve",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<AgentVo> retrievePassword(@RequestParam("username")String username,
+                                                    @RequestParam("password")String password,
+                                                    @RequestParam("code")String validateCode){
+        AgentVo agent=agentService.retrievePassword(username,password,validateCode);
+        if (agent != null) {
+            return ResponseResult.createBySuccess("密码重置成功",agent);
+        }
+        return ResponseResult.createByError("密码重置失败");
+    }
 }
