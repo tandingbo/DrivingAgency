@@ -1,6 +1,7 @@
 package com.beautifulsoup.driving.service.impl;
 
 import com.beautifulsoup.driving.common.DrivingConstant;
+import com.beautifulsoup.driving.common.FastDfsFile;
 import com.beautifulsoup.driving.common.SecurityContextHolder;
 import com.beautifulsoup.driving.dto.AgentDto;
 import com.beautifulsoup.driving.dto.AnnouncementDto;
@@ -9,18 +10,10 @@ import com.beautifulsoup.driving.enums.AgentStatus;
 import com.beautifulsoup.driving.enums.RoleCode;
 import com.beautifulsoup.driving.exception.AuthenticationException;
 import com.beautifulsoup.driving.exception.ParamException;
-import com.beautifulsoup.driving.pojo.Agent;
-import com.beautifulsoup.driving.pojo.Announcement;
-import com.beautifulsoup.driving.pojo.Comment;
-import com.beautifulsoup.driving.pojo.Role;
-import com.beautifulsoup.driving.repository.AgentRepository;
-import com.beautifulsoup.driving.repository.AnnouncementRepository;
-import com.beautifulsoup.driving.repository.CommentRepository;
-import com.beautifulsoup.driving.repository.RoleRepository;
+import com.beautifulsoup.driving.pojo.*;
+import com.beautifulsoup.driving.repository.*;
 import com.beautifulsoup.driving.service.AgentManageService;
-import com.beautifulsoup.driving.utils.JsonSerializerUtil;
-import com.beautifulsoup.driving.utils.MD5Util;
-import com.beautifulsoup.driving.utils.ParamValidatorUtil;
+import com.beautifulsoup.driving.utils.*;
 import com.beautifulsoup.driving.vo.*;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
@@ -29,15 +22,24 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
 import javax.management.relation.RoleStatus;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,6 +66,9 @@ public class AgentManageServiceImpl implements AgentManageService {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     @Override
     public AgentBaseInfoVo addNewAgent(AgentDto agentDto, BindingResult result) {
@@ -375,6 +380,69 @@ public class AgentManageServiceImpl implements AgentManageService {
             commentVos.add(commentVo);
         }
         return commentVos;
+    }
+
+    @Override
+    public String derivedExcel() {
+        List<String> collect = listAllAgents().stream().map(AgentVo::getAgentName).collect(Collectors.toList());
+        List<Student> all = studentRepository.findAllByOperatorIn(collect, Sort.by(Sort.Order.desc("studentPrice")));
+        List<StudentVo> studentVos= Lists.newArrayList();
+
+
+        all.forEach(student -> {
+            StudentVo studentVo=new StudentVo();
+            BeanUtils.copyProperties(student,studentVo);
+            studentVos.add(studentVo);
+        });
+        HSSFWorkbook wb = new HSSFWorkbook();
+        HSSFSheet sheet = wb.createSheet("获取学员信息Excel表格");
+        HSSFRow row = null;
+        row = sheet.createRow(0);
+        row.setHeight((short) (26.25 * 20));
+        row.createCell(0).setCellValue("学员信息列表");
+        CellRangeAddress rowRegion = new CellRangeAddress(0, 0, 0, 8);
+        sheet.addMergedRegion(rowRegion);
+        row = sheet.createRow(1);
+        row.setHeight((short) (22.50 * 20));//设置行高
+        row.createCell(0).setCellValue("学员Id");//为第一个单元格设值
+        row.createCell(1).setCellValue("学院学号");//为第一个单元格设值
+        row.createCell(2).setCellValue("学员姓名");//为第二个单元格设值
+        row.createCell(3).setCellValue("学员手机号");//为第三个单元格设值
+        row.createCell(4).setCellValue("学员身份证照片地址");//为第四个单元格设值
+        row.createCell(5).setCellValue("学员学费");//为第五个单元格设值
+        row.createCell(6).setCellValue("学员学校");//为第六个单元格设值
+        row.createCell(7).setCellValue("学员添加者");//为第七个单元格设值
+        row.createCell(8).setCellValue("学员");//为第八个单元格设值
+
+        for (int i = 0; i < studentVos.size(); i++) {
+            row = sheet.createRow(i + 2);
+            StudentVo studentVo = studentVos.get(i);
+            row.createCell(0).setCellValue(studentVo.getId());
+            row.createCell(1).setCellValue(studentVo.getStudentId());
+            row.createCell(2).setCellValue(studentVo.getStudentName());
+            row.createCell(3).setCellValue(studentVo.getStudentPhone());
+            row.createCell(4).setCellValue(studentVo.getStudentImg());
+            if (studentVo.getStudentPrice()==null){
+                row.createCell(5).setCellValue(0);
+            }else{
+                row.createCell(5).setCellValue(studentVo.getStudentPrice().doubleValue());
+            }
+            row.createCell(6).setCellValue(studentVo.getStudentSchool());
+            row.createCell(7).setCellValue(studentVo.getOperator());
+            row.createCell(8).setCellValue(DateTimeUtil.dateToStr(studentVo.getUpdateTime()));
+        }
+        sheet.setDefaultRowHeight((short) (16.5 * 20));
+        for (int i = 0; i <= 13; i++) {
+            sheet.autoSizeColumn(i);
+        }
+        File file=new File("C:\\agent\\Student.xls");
+        try {
+            wb.write(file);
+            return "Excel导出成功"+file.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 

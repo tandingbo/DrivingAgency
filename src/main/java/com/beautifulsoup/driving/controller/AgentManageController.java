@@ -8,12 +8,15 @@ import com.beautifulsoup.driving.pojo.Comment;
 import com.beautifulsoup.driving.service.AgentManageService;
 import com.beautifulsoup.driving.vo.*;
 import io.swagger.annotations.Api;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -137,10 +140,14 @@ public class AgentManageController {
         return ResponseResult.createBySuccess("评论发表成功",agentRankingVo);
     }
 
-    @GetMapping(value = "/derived/excel")
+    @GetMapping(value = "/derived/excel",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public ResponseResult derivedExcel(){
-        return null;
+    public ResponseResult<String> derivedExcel(){
+        String path=agentManageService.derivedExcel();
+        if (StringUtils.isNotBlank(path)){
+            return ResponseResult.createBySuccess("学员信息导出Excel成功",path);
+        }
+        return ResponseResult.createByError("学员信息导出Excel失败");
     }
 
 

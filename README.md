@@ -1,6 +1,6 @@
 # DrivingAgency
 
-驾校代理小程序后端
+使用SpringBoot构建的基于RBAC权限模型的驾校代理小程序后端
 
 ## 技术包括
 
@@ -21,6 +21,8 @@
 8.  JWT Token
 
 9.  FastDFS
+
+10. apache poi
 
 ## 要点
 1.  热点数据入Redis,提高SQL的查询性能

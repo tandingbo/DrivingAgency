@@ -6,6 +6,7 @@ import com.beautifulsoup.driving.dto.CommentDto;
 import com.beautifulsoup.driving.vo.*;
 import org.springframework.validation.BindingResult;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 public interface AgentManageService {
@@ -24,4 +25,5 @@ public interface AgentManageService {
     AgentRankingVo starAgent(String username);
     AgentRankingVo publishCommentByAgentName(CommentDto commentDto, BindingResult result);
     List<CommentVo> rankingCommentsListByName(String username);
+    String derivedExcel();
 }
