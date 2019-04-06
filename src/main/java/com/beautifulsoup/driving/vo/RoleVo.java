@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Getter
@@ -15,8 +16,9 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RoleVo {
+public class RoleVo implements Serializable {
 
+    private static final long serialVersionUID = 3861979206867458087L;
     private String roleName;
 
     private String remark;

@@ -3,12 +3,10 @@ package com.beautifulsoup.driving.controller;
 import com.beautifulsoup.driving.common.ResponseResult;
 import com.beautifulsoup.driving.dto.AgentDto;
 import com.beautifulsoup.driving.dto.AnnouncementDto;
-import com.beautifulsoup.driving.pojo.Agent;
-import com.beautifulsoup.driving.pojo.Announcement;
+import com.beautifulsoup.driving.dto.CommentDto;
+import com.beautifulsoup.driving.pojo.Comment;
 import com.beautifulsoup.driving.service.AgentManageService;
-import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
-import com.beautifulsoup.driving.vo.AgentVo;
-import com.beautifulsoup.driving.vo.AnnouncementVo;
+import com.beautifulsoup.driving.vo.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -106,16 +104,37 @@ public class AgentManageController {
 
     @GetMapping(value = "/ranking/listbydaily",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public ResponseResult<List<AgentBaseInfoVo>> rankingListbyDailyAchievements(){
-        List<AgentBaseInfoVo> agents=agentManageService.rankingListbyDailyAchievements();
+    public ResponseResult<List<AgentRankingVo>> rankingListbyDailyAchievements(){
+        List<AgentRankingVo> agents=agentManageService.rankingListbyDailyAchievements();
         return ResponseResult.createBySuccess("排行榜日业绩获取成功",agents);
     }
 
     @GetMapping(value = "/ranking/listbytotal",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public ResponseResult<List<AgentBaseInfoVo>> rankingListbyTotalAchievements(){
-        List<AgentBaseInfoVo> agents=agentManageService.rankingListbyTotalAchievements();
+    public ResponseResult<List<AgentRankingVo>> rankingListbyTotalAchievements(){
+        List<AgentRankingVo> agents=agentManageService.rankingListbyTotalAchievements();
         return ResponseResult.createBySuccess("排行榜总业绩获取成功",agents);
+    }
+
+    @GetMapping(value = "/ranking/comments/list",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<List<CommentVo>> rankingCommentsListByName(@RequestParam("username")String username){
+        List<CommentVo> commentVos=agentManageService.rankingCommentsListByName(username);
+        return ResponseResult.createBySuccess("评论获取成功",commentVos);
+    }
+
+
+    @PostMapping(value = "/agent/star",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<AgentRankingVo> starAgentByName(@RequestParam(value = "username")String username){
+        AgentRankingVo agentRankingVo=agentManageService.starAgent(username);
+        return ResponseResult.createBySuccess(String.join(" ",username,"点赞成功"),agentRankingVo);
+    }
+    @PostMapping(value = "/agent/comment",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<AgentRankingVo> publishCommentByAgentName(@Valid @RequestBody CommentDto commentDto,BindingResult result){
+        AgentRankingVo agentRankingVo=agentManageService.publishCommentByAgentName(commentDto,result);
+        return ResponseResult.createBySuccess("评论发表成功",agentRankingVo);
     }
 
     @GetMapping(value = "/derived/excel")

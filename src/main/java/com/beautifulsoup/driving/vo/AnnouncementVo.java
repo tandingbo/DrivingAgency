@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Getter
@@ -15,7 +16,8 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AnnouncementVo {
+public class AnnouncementVo implements Serializable {
+    private static final long serialVersionUID = 9009814907491473841L;
     private String content;
     @JsonSerialize(using = Date2LongSerializer.class)
     private Date publishTime;

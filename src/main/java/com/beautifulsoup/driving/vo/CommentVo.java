@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Getter
@@ -15,7 +16,8 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CommentVo {
+public class CommentVo implements Serializable {
+    private static final long serialVersionUID = 8205444638525245213L;
     private String name;
     private String content;
     private String author;

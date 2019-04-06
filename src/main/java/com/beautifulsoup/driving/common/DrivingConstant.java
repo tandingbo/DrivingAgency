@@ -33,7 +33,9 @@ public class DrivingConstant {
         String ACHIEVEMENT_DAILY="achievement_daily:";
         String ACHIEVEMENT_AGENT="achievement_agent:";
         String ACHIEVEMENT_AGENTS="achievement_agents:";
-
+        //排行榜信息维护
+        String RANKING_AGENTS="ranking_agents:";
+        String RANKING_AGENT="ranking_agent:";
         String AGENT_STARS="agent_stars:";
         String AGENT_STAR="agent_star:";
 

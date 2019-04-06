@@ -4,29 +4,30 @@ import com.beautifulsoup.driving.common.DrivingConstant;
 import com.beautifulsoup.driving.common.SecurityContextHolder;
 import com.beautifulsoup.driving.dto.AgentDto;
 import com.beautifulsoup.driving.dto.AnnouncementDto;
+import com.beautifulsoup.driving.dto.CommentDto;
 import com.beautifulsoup.driving.enums.AgentStatus;
 import com.beautifulsoup.driving.enums.RoleCode;
 import com.beautifulsoup.driving.exception.AuthenticationException;
 import com.beautifulsoup.driving.exception.ParamException;
 import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.pojo.Announcement;
+import com.beautifulsoup.driving.pojo.Comment;
 import com.beautifulsoup.driving.pojo.Role;
 import com.beautifulsoup.driving.repository.AgentRepository;
 import com.beautifulsoup.driving.repository.AnnouncementRepository;
+import com.beautifulsoup.driving.repository.CommentRepository;
 import com.beautifulsoup.driving.repository.RoleRepository;
 import com.beautifulsoup.driving.service.AgentManageService;
 import com.beautifulsoup.driving.utils.JsonSerializerUtil;
 import com.beautifulsoup.driving.utils.MD5Util;
 import com.beautifulsoup.driving.utils.ParamValidatorUtil;
-import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
-import com.beautifulsoup.driving.vo.AgentVo;
-import com.beautifulsoup.driving.vo.AnnouncementVo;
-import com.beautifulsoup.driving.vo.RoleVo;
+import com.beautifulsoup.driving.vo.*;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
@@ -60,6 +61,9 @@ public class AgentManageServiceImpl implements AgentManageService {
 
     @Autowired
     private AnnouncementRepository announcementRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Override
     public AgentBaseInfoVo addNewAgent(AgentDto agentDto, BindingResult result) {
@@ -284,30 +288,95 @@ public class AgentManageServiceImpl implements AgentManageService {
 
     //排行榜系统,默认返回前10条
     @Override
-    public List<AgentBaseInfoVo> rankingListbyDailyAchievements() {
-        List<AgentBaseInfoVo> agentBaseInfoVos=Lists.newArrayList();
+    public List<AgentRankingVo> rankingListbyDailyAchievements() {
+        List<AgentRankingVo> agentBaseInfoVos=Lists.newArrayList();
         List<String> collect = stringRedisTemplate.opsForZSet().reverseRange(DrivingConstant.Redis.ACHIEVEMENT_DAILY_ORDER, 0, 9).stream()
                 .map(key -> key.substring(key.lastIndexOf(":") + 1)).collect(Collectors.toList());
         for (String name:collect){
-            String agentKey=String.join("",DrivingConstant.Redis.ACHIEVEMENT_AGENT,name);
-            AgentBaseInfoVo agentBaseInfoVo = (AgentBaseInfoVo) redisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_AGENTS, agentKey);
-            agentBaseInfoVos.add(agentBaseInfoVo);
+            String agentKey=String.join("",DrivingConstant.Redis.RANKING_AGENT,name);
+            AgentRankingVo agentRankingVo =
+                    (AgentRankingVo) redisTemplate.opsForHash().get(DrivingConstant.Redis.RANKING_AGENTS, agentKey);
+            if (agentRankingVo != null) {
+                agentBaseInfoVos.add(agentRankingVo);
+            }
         }
         return agentBaseInfoVos;
     }
 
     @Override
-    public List<AgentBaseInfoVo> rankingListbyTotalAchievements() {
-        List<AgentBaseInfoVo> agentBaseInfoVos=Lists.newArrayList();
+    public List<AgentRankingVo> rankingListbyTotalAchievements() {
+        List<AgentRankingVo> agentBaseInfoVos=Lists.newArrayList();
         List<String> collect = stringRedisTemplate.opsForZSet().reverseRange(DrivingConstant.Redis.ACHIEVEMENT_TOTAL_ORDER, 0, 9).stream()
                 .map(key -> key.substring(key.lastIndexOf(":") + 1)).collect(Collectors.toList());
         for (String name:collect){
-            String agentKey=String.join("",DrivingConstant.Redis.ACHIEVEMENT_AGENT,name);
-            AgentBaseInfoVo agentBaseInfoVo = (AgentBaseInfoVo) redisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_AGENTS, agentKey);
-            agentBaseInfoVos.add(agentBaseInfoVo);
+            String agentKey=String.join("",DrivingConstant.Redis.RANKING_AGENT,name);
+            AgentRankingVo agentRankingVo =
+                    (AgentRankingVo) redisTemplate.opsForHash().get(DrivingConstant.Redis.RANKING_AGENTS, agentKey);
+            if (agentRankingVo != null) {
+                agentBaseInfoVos.add(agentRankingVo);
+            }
         }
         return agentBaseInfoVos;
     }
+
+    @Override
+    public AgentRankingVo starAgent(String username) {
+        boolean b = redisTemplate.opsForHash().hasKey(DrivingConstant.Redis.RANKING_AGENTS, DrivingConstant.Redis.RANKING_AGENT + username).booleanValue();
+        if (!b){
+            throw new ParamException("当前代理不存在,点赞失败");
+        }
+        Long starNums = stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.AGENT_STARS, username, 1);
+        AgentRankingVo agentRankingVo =
+                (AgentRankingVo) redisTemplate.opsForHash().get(DrivingConstant.Redis.RANKING_AGENTS, DrivingConstant.Redis.RANKING_AGENT+ username);
+        if (agentRankingVo != null) {
+            agentRankingVo.setStarNums(starNums.intValue());
+            redisTemplate.opsForHash().put(DrivingConstant.Redis.RANKING_AGENTS, DrivingConstant.Redis.RANKING_AGENT+ username,agentRankingVo);
+            return agentRankingVo;
+        }
+        return null;
+    }
+
+    @Override
+    public AgentRankingVo publishCommentByAgentName(CommentDto commentDto, BindingResult result) {
+        ParamValidatorUtil.validateBindingResult(result);
+        boolean b = redisTemplate.opsForHash().hasKey(DrivingConstant.Redis.RANKING_AGENTS, DrivingConstant.Redis.RANKING_AGENT + commentDto.getName()).booleanValue();
+        if (!b){
+            throw new ParamException("当前代理不存在,点赞失败");
+        }
+        Agent agent=SecurityContextHolder.getAgent();
+        Comment comment=new Comment();
+        BeanUtils.copyProperties(commentDto,comment);
+        comment.setAuthor(agent.getAgentName());
+        comment.setPublishTime(new Date());
+        commentRepository.save(comment);
+        AgentRankingVo agentRankingVo =
+                (AgentRankingVo) redisTemplate.opsForHash().get(DrivingConstant.Redis.RANKING_AGENTS, DrivingConstant.Redis.RANKING_AGENT+ commentDto.getName());
+        if (agentRankingVo != null) {
+            if (CollectionUtils.isEmpty(agentRankingVo.getCommentVos())){
+                List<CommentVo> commentVos=Lists.newArrayList();
+                agentRankingVo.setCommentVos(commentVos);
+            }
+            CommentVo commentVo=new CommentVo();
+            BeanUtils.copyProperties(comment,commentVo);
+            agentRankingVo.getCommentVos().add(commentVo);
+            redisTemplate.opsForHash().put(DrivingConstant.Redis.RANKING_AGENTS, DrivingConstant.Redis.RANKING_AGENT+ comment.getName(),agentRankingVo);
+            return agentRankingVo;
+        }
+        return null;
+    }
+
+    @Override
+    public List<CommentVo> rankingCommentsListByName(String username) {
+        List<Comment> allByName = commentRepository.findAllByName(username);
+        List<CommentVo> commentVos=Lists.newArrayList();
+        for (Comment comment:allByName){
+            CommentVo commentVo=new CommentVo();
+            BeanUtils.copyProperties(comment,commentVo);
+            commentVos.add(commentVo);
+        }
+        return commentVos;
+    }
+
 
     private Set<Agent> findChildrenAgents(Set<Agent> agents,Integer parentId){
         Optional<Agent> optional = agentRepository.findById(parentId);
