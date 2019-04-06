@@ -13,10 +13,11 @@ public interface AgentManageService {
     AgentBaseInfoVo addNewAgent(AgentDto agentDto, BindingResult result);
     AnnouncementVo publishAnnouncement(AnnouncementDto announcementDto, BindingResult result);
     AgentBaseInfoVo examineExistsAgent(String username);
-    List<AgentVo> listAllAgents();
+    List<AgentVo> listAllProcessedAgents();
     List<AgentVo> listAllUnExamineAgents();
     AnnouncementVo getLatestAnnouncement();
     List<AgentBaseInfoVo> listAllAgentsByDailyAchievements();
     List<AgentBaseInfoVo> listAllAgentsByTotalAchievements();
     List<AgentBaseInfoVo> listChildrenAgentsByName(String username);
+    List<AgentVo> listAllAgents();
 }

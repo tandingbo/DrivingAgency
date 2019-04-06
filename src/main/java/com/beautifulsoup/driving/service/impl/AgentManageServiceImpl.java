@@ -26,6 +26,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -139,8 +140,12 @@ public class AgentManageServiceImpl implements AgentManageService {
         return null;
     }
 
+    //获取指定代理下的所有子代理,比如超管->1级代理->2级代理。如果当前用户是Admin,这里得到其下的全部一级代理和二级代理
+
+
+    //获取第一层子代理。比如超管->1级代理->2级代理。如果当前用户是Admin,这里只得到所有的1级代理,这种做法的原因是为了满足首页需求
     @Override
-    public List<AgentVo> listAllAgents() {
+    public List<AgentVo> listAllProcessedAgents() {
         Agent agent = SecurityContextHolder.getAgent();
         ParamValidatorUtil.validateContextHolderAgent(agent);
         Set<Agent> agents= Sets.newConcurrentHashSet();
@@ -214,7 +219,7 @@ public class AgentManageServiceImpl implements AgentManageService {
 
     @Override
     public List<AgentBaseInfoVo> listAllAgentsByDailyAchievements() {
-        List<AgentVo> agentVos = listAllAgents();
+        List<AgentVo> agentVos = listAllProcessedAgents();
         List<AgentBaseInfoVo> collect =Lists.newArrayList();
         agentVos.stream().sorted(Comparator.comparing(AgentVo::getDailyAchieve).reversed())
                 .forEach(agentVo -> {
@@ -228,7 +233,7 @@ public class AgentManageServiceImpl implements AgentManageService {
 
     @Override
     public List<AgentBaseInfoVo> listAllAgentsByTotalAchievements() {
-        List<AgentVo> agentVos = listAllAgents();
+        List<AgentVo> agentVos = listAllProcessedAgents();
         List<AgentBaseInfoVo> collect =Lists.newArrayList();
         agentVos.stream().sorted(Comparator.comparing(AgentVo::getAgentAchieve).reversed())
                 .forEach(agentVo -> {
@@ -250,10 +255,28 @@ public class AgentManageServiceImpl implements AgentManageService {
                 BeanUtils.copyProperties(agent,agentBaseInfoVo);
                 agentBaseInfoVos.add(agentBaseInfoVo);
             });
+            //人数不是很多,可以采用内存排序
             List<AgentBaseInfoVo> collect = agentBaseInfoVos.stream().sorted(Comparator.comparing(AgentBaseInfoVo::getAgentAchieve).reversed()).collect(Collectors.toList());
             return collect;
         }
         return null;
+    }
+
+    @Override
+    public List<AgentVo> listAllAgents() {
+        List<AgentVo> agentVos=Lists.newArrayList();
+        Agent agent=SecurityContextHolder.getAgent();
+        Set<Agent> agents=Sets.newHashSet();
+        findChildrenAgents(agents,agent.getId());
+        Iterator<Agent> iterator = agents.iterator();
+        while (iterator.hasNext()){
+            Agent next = iterator.next();
+            AgentVo agentVo=new AgentVo();
+            BeanUtils.copyProperties(next,agentVo);
+            agentVos.add(agentVo);
+        }
+        List<AgentVo> collect = agentVos.stream().sorted(Comparator.comparing(AgentVo::getAgentAchieve).reversed()).collect(Collectors.toList());
+        return collect;
     }
 
     private Set<Agent> findChildrenAgents(Set<Agent> agents,Integer parentId){

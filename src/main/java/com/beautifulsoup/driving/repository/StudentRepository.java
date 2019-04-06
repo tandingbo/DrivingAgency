@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface StudentRepository extends JpaRepository<Student,Integer> {
     Student findByStudentName(String studentName);
-    Page<Student> findAllByOperator(String operator, Pageable pageable);
-    List<Student> findAllByOperator(String operator,Sort sort);
+    Page<Student> findAllByOperatorIn(List<String> operator, Pageable pageable);
+    List<Student> findAllByOperatorIn(List<String> operator,Sort sort);
     List<Student> findAllByStatus(Integer status);
 }

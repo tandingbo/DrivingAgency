@@ -12,8 +12,10 @@ import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.pojo.Student;
 import com.beautifulsoup.driving.repository.AgentRepository;
 import com.beautifulsoup.driving.repository.StudentRepository;
+import com.beautifulsoup.driving.service.AgentManageService;
 import com.beautifulsoup.driving.service.StudentService;
 import com.beautifulsoup.driving.utils.ParamValidatorUtil;
+import com.beautifulsoup.driving.vo.AgentVo;
 import com.beautifulsoup.driving.vo.StudentVo;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
@@ -30,6 +32,7 @@ import org.springframework.validation.BindingResult;
 
 import javax.management.relation.RoleStatus;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -42,6 +45,9 @@ public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private AgentRepository agentRepository;
+
+    @Autowired
+    private AgentManageService agentManageService;
 
     @Override
     public StudentVo addNewStudent(StudentDto studentDto, BindingResult result) {
@@ -105,9 +111,9 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentVo> getAllStudentsByPage(Integer pageNum, Integer pageSize) {
-        Agent agent=SecurityContextHolder.getAgent();
+        List<String> collect = agentManageService.listAllAgents().stream().map(AgentVo::getAgentName).collect(Collectors.toList());
         Pageable pageable= PageRequest.of(pageNum-1,pageSize, Sort.by(Sort.Order.desc("studentPrice")));
-        Page<Student> all = studentRepository.findAllByOperator(agent.getAgentName(),pageable);
+        Page<Student> all = studentRepository.findAllByOperatorIn(collect,pageable);
         List<StudentVo> studentVos=Lists.newArrayList();
         all.get().forEach(student -> {
             StudentVo studentVo=new StudentVo();
@@ -119,9 +125,10 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentVo> getAllStudents() {
-        Agent agent = SecurityContextHolder.getAgent();
-        List<Student> all = studentRepository.findAllByOperator(agent.getAgentName(),Sort.by(Sort.Order.desc("studentPrice")));
+        List<String> collect = agentManageService.listAllAgents().stream().map(AgentVo::getAgentName).collect(Collectors.toList());
+        List<Student> all = studentRepository.findAllByOperatorIn(collect,Sort.by(Sort.Order.desc("studentPrice")));
         List<StudentVo> studentVos= Lists.newArrayList();
+
 
         all.forEach(student -> {
             StudentVo studentVo=new StudentVo();
