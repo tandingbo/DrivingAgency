@@ -20,4 +20,6 @@ public interface AgentManageService {
     List<AgentBaseInfoVo> listAllAgentsByTotalAchievements();
     List<AgentBaseInfoVo> listChildrenAgentsByName(String username);
     List<AgentVo> listAllAgents();
+    List<AgentBaseInfoVo> rankingListbyDailyAchievements();
+    List<AgentBaseInfoVo> rankingListbyTotalAchievements();
 }

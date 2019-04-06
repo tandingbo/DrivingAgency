@@ -104,7 +104,19 @@ public class AgentManageController {
         return ResponseResult.createBySuccess("最新公告获取成功",announcementVo);
     }
 
+    @GetMapping(value = "/ranking/listbydaily",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<List<AgentBaseInfoVo>> rankingListbyDailyAchievements(){
+        List<AgentBaseInfoVo> agents=agentManageService.rankingListbyDailyAchievements();
+        return ResponseResult.createBySuccess("排行榜日业绩获取成功",agents);
+    }
 
+    @GetMapping(value = "/ranking/listbytotal",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseResult<List<AgentBaseInfoVo>> rankingListbyTotalAchievements(){
+        List<AgentBaseInfoVo> agents=agentManageService.rankingListbyTotalAchievements();
+        return ResponseResult.createBySuccess("排行榜总业绩获取成功",agents);
+    }
 
     @GetMapping(value = "/derived/excel")
     @ResponseBody

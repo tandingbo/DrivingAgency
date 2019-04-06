@@ -36,7 +36,7 @@ public class FileController {
     })
     @PostMapping(value = "/upload",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
-    public ResponseResult uploadFile(@RequestParam("idcard")MultipartFile file){
+    public ResponseResult uploadFile(@RequestParam("idcardimg")MultipartFile file){
         String path=fileService.uploadIdCardImage(file);
         if (path != null) {
              return ResponseResult.createBySuccess("文件上传成功",path);

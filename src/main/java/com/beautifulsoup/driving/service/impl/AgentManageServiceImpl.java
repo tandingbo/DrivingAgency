@@ -15,6 +15,7 @@ import com.beautifulsoup.driving.repository.AgentRepository;
 import com.beautifulsoup.driving.repository.AnnouncementRepository;
 import com.beautifulsoup.driving.repository.RoleRepository;
 import com.beautifulsoup.driving.service.AgentManageService;
+import com.beautifulsoup.driving.utils.JsonSerializerUtil;
 import com.beautifulsoup.driving.utils.MD5Util;
 import com.beautifulsoup.driving.utils.ParamValidatorUtil;
 import com.beautifulsoup.driving.vo.AgentBaseInfoVo;
@@ -22,6 +23,7 @@ import com.beautifulsoup.driving.vo.AgentVo;
 import com.beautifulsoup.driving.vo.AnnouncementVo;
 import com.beautifulsoup.driving.vo.RoleVo;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -41,6 +43,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class AgentManageServiceImpl implements AgentManageService {
+
+    private static final Splitter splitter=Splitter.on(":").trimResults().omitEmptyStrings();
 
     @Autowired
     private RoleRepository roleRepository;
@@ -90,7 +94,7 @@ public class AgentManageServiceImpl implements AgentManageService {
                 //总业绩和当天业绩的更新
                 stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_DAILY,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),1);
                 stringRedisTemplate.opsForHash().increment(DrivingConstant.Redis.ACHIEVEMENT_TOTAL,DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),1);
-
+                //排行榜数据的维护
                 stringRedisTemplate.opsForZSet().add(DrivingConstant.Redis.ACHIEVEMENT_TOTAL_ORDER,
                         DrivingConstant.Redis.ACHIEVEMENT_AGENT+authentication.getAgentName(),
                         Double.parseDouble(MoreObjects.firstNonNull(Strings.emptyToNull((String) stringRedisTemplate.opsForHash()
@@ -141,7 +145,22 @@ public class AgentManageServiceImpl implements AgentManageService {
     }
 
     //获取指定代理下的所有子代理,比如超管->1级代理->2级代理。如果当前用户是Admin,这里得到其下的全部一级代理和二级代理
-
+    @Override
+    public List<AgentVo> listAllAgents() {
+        List<AgentVo> agentVos=Lists.newArrayList();
+        Agent agent=SecurityContextHolder.getAgent();
+        Set<Agent> agents=Sets.newHashSet();
+        findChildrenAgents(agents,agent.getId());
+        Iterator<Agent> iterator = agents.iterator();
+        while (iterator.hasNext()){
+            Agent next = iterator.next();
+            AgentVo agentVo=new AgentVo();
+            BeanUtils.copyProperties(next,agentVo);
+            agentVos.add(agentVo);
+        }
+        List<AgentVo> collect = agentVos.stream().sorted(Comparator.comparing(AgentVo::getAgentAchieve).reversed()).collect(Collectors.toList());
+        return collect;
+    }
 
     //获取第一层子代理。比如超管->1级代理->2级代理。如果当前用户是Admin,这里只得到所有的1级代理,这种做法的原因是为了满足首页需求
     @Override
@@ -256,27 +275,38 @@ public class AgentManageServiceImpl implements AgentManageService {
                 agentBaseInfoVos.add(agentBaseInfoVo);
             });
             //人数不是很多,可以采用内存排序
-            List<AgentBaseInfoVo> collect = agentBaseInfoVos.stream().sorted(Comparator.comparing(AgentBaseInfoVo::getAgentAchieve).reversed()).collect(Collectors.toList());
+            List<AgentBaseInfoVo> collect = agentBaseInfoVos.stream()
+                    .sorted(Comparator.comparing(AgentBaseInfoVo::getAgentAchieve).reversed()).collect(Collectors.toList());
             return collect;
         }
         return null;
     }
 
+    //排行榜系统,默认返回前10条
     @Override
-    public List<AgentVo> listAllAgents() {
-        List<AgentVo> agentVos=Lists.newArrayList();
-        Agent agent=SecurityContextHolder.getAgent();
-        Set<Agent> agents=Sets.newHashSet();
-        findChildrenAgents(agents,agent.getId());
-        Iterator<Agent> iterator = agents.iterator();
-        while (iterator.hasNext()){
-            Agent next = iterator.next();
-            AgentVo agentVo=new AgentVo();
-            BeanUtils.copyProperties(next,agentVo);
-            agentVos.add(agentVo);
+    public List<AgentBaseInfoVo> rankingListbyDailyAchievements() {
+        List<AgentBaseInfoVo> agentBaseInfoVos=Lists.newArrayList();
+        List<String> collect = stringRedisTemplate.opsForZSet().reverseRange(DrivingConstant.Redis.ACHIEVEMENT_DAILY_ORDER, 0, 9).stream()
+                .map(key -> key.substring(key.lastIndexOf(":") + 1)).collect(Collectors.toList());
+        for (String name:collect){
+            String agentKey=String.join("",DrivingConstant.Redis.ACHIEVEMENT_AGENT,name);
+            AgentBaseInfoVo agentBaseInfoVo = (AgentBaseInfoVo) redisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_AGENTS, agentKey);
+            agentBaseInfoVos.add(agentBaseInfoVo);
         }
-        List<AgentVo> collect = agentVos.stream().sorted(Comparator.comparing(AgentVo::getAgentAchieve).reversed()).collect(Collectors.toList());
-        return collect;
+        return agentBaseInfoVos;
+    }
+
+    @Override
+    public List<AgentBaseInfoVo> rankingListbyTotalAchievements() {
+        List<AgentBaseInfoVo> agentBaseInfoVos=Lists.newArrayList();
+        List<String> collect = stringRedisTemplate.opsForZSet().reverseRange(DrivingConstant.Redis.ACHIEVEMENT_TOTAL_ORDER, 0, 9).stream()
+                .map(key -> key.substring(key.lastIndexOf(":") + 1)).collect(Collectors.toList());
+        for (String name:collect){
+            String agentKey=String.join("",DrivingConstant.Redis.ACHIEVEMENT_AGENT,name);
+            AgentBaseInfoVo agentBaseInfoVo = (AgentBaseInfoVo) redisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_AGENTS, agentKey);
+            agentBaseInfoVos.add(agentBaseInfoVo);
+        }
+        return agentBaseInfoVos;
     }
 
     private Set<Agent> findChildrenAgents(Set<Agent> agents,Integer parentId){

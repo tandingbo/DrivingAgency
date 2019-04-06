@@ -7,11 +7,13 @@ import com.beautifulsoup.driving.pojo.Agent;
 import com.beautifulsoup.driving.repository.AgentRepositoryTest;
 import com.beautifulsoup.driving.utils.MD5Util;
 import com.beautifulsoup.driving.utils.TokenUtil;
+import com.google.common.collect.Sets;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +23,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -109,5 +114,13 @@ public class DrivingApplicationTests {
         +"aaa", Double.parseDouble((String) stringRedisTemplate.opsForHash().get(DrivingConstant.Redis.ACHIEVEMENT_DAILY,
                 DrivingConstant.Redis.ACHIEVEMENT_AGENT+"aaa")) );
     }
+
+    @Test
+    public void redisTemplateZset(){
+        Set<String> strings = stringRedisTemplate.opsForZSet().reverseRange(DrivingConstant.Redis.ACHIEVEMENT_DAILY_ORDER, 0, 4);
+        log.info(Arrays.toString(strings.toArray()));
+    }
+
+
 
 }
